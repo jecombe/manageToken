@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
-import { formatEther, getContract } from "viem";
+import { formatEther, getContract, parseEther } from "viem";
+import { PropagateLoader, CircleLoader } from "react-spinners";
+
 import abi from "./abi";
 
 export default function WalletButton() {
@@ -96,7 +98,7 @@ export default function WalletButton() {
         onClick={handleClick}
       >
         {isLoading ? (
-          <div className="loader"></div>
+          <PropagateLoader color={"#ffffff"} loading={isLoading} />
         ) : (
           <>
             <img
@@ -154,27 +156,43 @@ function StatusContract({
 }) {
   const [mintAmount, setMintAmount] = useState(0);
   const [burnAmount, setBurnAmount] = useState(0);
-
-  const handleMintChange = (event) => {
-    setMintAmount(event.target.value);
-  };
+  const [mintLoading, setMintLoading] = useState(false);
+  const [burnLoading, setBurnLoading] = useState(false);
 
   const handleMintSubmit = async (event) => {
     event.preventDefault();
+    setMintLoading(true);
     console.log("Mint amount:", mintAmount);
-    const ret = await getWriteFunction("mint", [mintAmount], userAddr);
-    console.log(ret);
+    const hash = await getWriteFunction(
+      "mint",
+      [parseEther(mintAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
     setMintAmount(0);
+    setMintLoading(false);
   };
 
-  const handleBurnChange = (event) => {
-    setBurnAmount(event.target.value);
-  };
-
-  const handleBurnSubmit = (event) => {
+  const handleBurnSubmit = async (event) => {
     event.preventDefault();
-    console.log("Burn amount:", mintAmount);
+    setBurnLoading(true);
+    console.log("Burn amount:", burnAmount);
+    const hash = await getWriteFunction(
+      "burn",
+      [parseEther(burnAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
     setBurnAmount(0);
+    setBurnLoading(false);
   };
 
   return (
@@ -190,15 +208,31 @@ function StatusContract({
 
       <div>
         <h2>Mint</h2>
-        <form onSubmit={handleMintSubmit}>
-          <input type="number" value={mintAmount} onChange={handleMintChange} />
-          <button type="submit">Mint</button>
-        </form>
+        {mintLoading ? (
+          <CircleLoader color={"#000000"} loading={mintLoading} />
+        ) : (
+          <form onSubmit={handleMintSubmit}>
+            <input
+              type="number"
+              value={mintAmount}
+              onChange={(event) => setMintAmount(event.target.value)}
+            />
+            <button type="submit">Mint</button>
+          </form>
+        )}
         <h2>Burn</h2>
-        <form onSubmit={handleBurnSubmit}>
-          <input type="number" value={burnAmount} onChange={handleBurnChange} />
-          <button type="submit">Burn</button>
-        </form>
+        {burnLoading ? (
+          <CircleLoader color={"#000000"} loading={burnLoading} />
+        ) : (
+          <form onSubmit={handleBurnSubmit}>
+            <input
+              type="number"
+              value={burnAmount}
+              onChange={(event) => setBurnAmount(event.target.value)}
+            />
+            <button type="submit">Burn</button>
+          </form>
+        )}
       </div>
     </div>
   );
