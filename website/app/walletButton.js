@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
 import { formatEther, getContract } from "viem";
 import abi from "./abi";
@@ -7,6 +7,8 @@ import abi from "./abi";
 export default function WalletButton() {
   const [address, setAddress] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [balanceBusd, setBalanceBusd] = useState(null);
+
   const [isConnect, setIsConnect] = useState(false);
   const [contractBusd, setContractBusd] = useState(
     "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
@@ -15,13 +17,33 @@ export default function WalletButton() {
   const [contract, setContract] = useState(null);
   const [owner, setOwner] = useState(null);
 
-  const getCallFunction = async (functionName) => {
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      console.log("update balance");
+      try {
+        if (isConnect) {
+          const balance = await ConnectPublicClient().getBalance({ address });
+          const balanceOf = await getCallFunction("balanceOf", [address]);
+          setBalance(balance);
+          setBalanceBusd(formatEther(balanceOf));
+        }
+      } catch (error) {
+        console.error("Error updating balances:", error);
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [isConnect, address]);
+
+  const getCallFunction = async (functionName, args) => {
     return ConnectPublicClient().readContract({
       address: contractBusd,
       abi,
       functionName,
+      args,
     });
   };
+
   async function handleClick() {
     if (isConnect) {
       setIsConnect(false);
@@ -46,13 +68,13 @@ export default function WalletButton() {
         });
 
         const totalSupply = await getCallFunction("totalSupply");
-
-        const totalSupplyInEther = formatEther(totalSupply);
-        setTotalSupply(totalSupplyInEther);
-
         const ownerAddr = await getCallFunction("getOwner");
+        const balanceOf = await getCallFunction("balanceOf", [address]);
+
+        setTotalSupply(formatEther(totalSupply));
         setOwner(ownerAddr);
         setContract(contract);
+        setBalanceBusd(formatEther(balanceOf));
       } catch (error) {
         setIsConnect(false);
         console.error(error);
@@ -91,6 +113,7 @@ export default function WalletButton() {
             contract={contract}
             totalSupply={Math.round(totalSupply)}
             owner={owner}
+            balanceBusd={balanceBusd}
           />
         </>
       ) : (
@@ -100,23 +123,74 @@ export default function WalletButton() {
   );
 }
 
-function StatusContract({ contract, totalSupply, owner }) {
+const getWriteFunction = async (functionName, args) => {
+  return ConnectWalletClient().writeContract({
+    abi,
+    functionName,
+    address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
+    args,
+  });
+};
+
+function StatusContract({ contract, totalSupply, owner, balanceBusd }) {
+  const [mintAmount, setMintAmount] = useState(0);
+  const [burnAmount, setBurnAmount] = useState(0);
+
+  const handleMintChange = (event) => {
+    setMintAmount(event.target.value);
+  };
+
+  const handleMintSubmit = async (event) => {
+    event.preventDefault();
+    console.log("Mint amount:", mintAmount);
+    const ret = await getWriteFunction("mint", [mintAmount]);
+    console.log(ret);
+    setMintAmount(0);
+  };
+
+  const handleBurnChange = (event) => {
+    setBurnAmount(event.target.value);
+  };
+
+  const handleBurnSubmit = (event) => {
+    event.preventDefault();
+    console.log("Burn amount:", mintAmount);
+    setBurnAmount(0);
+  };
+
   return (
     <div>
       <h1>Busd Informations</h1>
       <h2>Owner contract: {owner}</h2>
       <h2>Total Supply: {totalSupply} BUSD</h2>
+      <h2>Your balance: {balanceBusd} BUSD</h2>
+
+      <div>
+        <h2>Transaction</h2>
+      </div>
+
+      <div>
+        <h2>Mint</h2>
+        <form onSubmit={handleMintSubmit}>
+          <input type="number" value={mintAmount} onChange={handleMintChange} />
+          <button type="submit">Mint</button>
+        </form>
+        <h2>Burn</h2>
+        <form onSubmit={handleBurnSubmit}>
+          <input type="number" value={burnAmount} onChange={handleBurnChange} />
+          <button type="submit">Burn</button>
+        </form>
+      </div>
     </div>
   );
 }
-
 function Status({ address, balance }) {
   if (address) {
     return (
       <div>
         <h1>Personal informations</h1>
-        <h2>Your address {address}</h2>
-        <h2>Balance {formatEther(balance.toString())}</h2>
+        <h2>Your address: {address}</h2>
+        <h2>Balance: {formatEther(balance.toString())} MATIC</h2>
       </div>
     );
   }
