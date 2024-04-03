@@ -39,6 +39,57 @@ export default function WalletButton() {
     return () => clearInterval(intervalId);
   }, [isConnect, address]);
 
+  useEffect(() => {
+    const handleAccountsChanged = async (accounts) => {
+      if (accounts.length === 0) {
+        // Metamask account disconnected
+        setIsConnect(false);
+        setAddress(null);
+        setBalance(null);
+        setTotalSupply(null);
+        setContract(null);
+      } else {
+        // Metamask account changed
+        try {
+          setIsLoading(true);
+          const address = accounts[0];
+          const balance = await ConnectPublicClient().getBalance({ address });
+
+          setAddress(address);
+          setBalance(balance);
+          setIsConnect(true);
+
+          const contract = getContract({
+            address: contractBusd,
+            abi,
+            publicClient: ConnectPublicClient(),
+            walletClient: ConnectWalletClient(),
+          });
+
+          const totalSupply = await getCallFunction("totalSupply");
+          const ownerAddr = await getCallFunction("getOwner");
+          const balanceOf = await getCallFunction("balanceOf", [address]);
+
+          setTotalSupply(formatEther(totalSupply));
+          setOwner(ownerAddr);
+          setContract(contract);
+          setBalanceBusd(formatEther(balanceOf));
+        } catch (error) {
+          setIsConnect(false);
+          console.error(error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+    return () => {
+      window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+    };
+  }, [contractBusd]);
+
   const getCallFunction = async (functionName, args) => {
     return ConnectPublicClient().readContract({
       address: contractBusd,
@@ -112,6 +163,8 @@ export default function WalletButton() {
           </>
         )}
       </button>
+      <h2>{address}</h2>
+
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
       {isConnect ? (
@@ -156,8 +209,11 @@ function StatusContract({
 }) {
   const [mintAmount, setMintAmount] = useState(0);
   const [burnAmount, setBurnAmount] = useState(0);
+  const [sendAmount, setSendAmount] = useState(0);
+  const [recipient, setRecipient] = useState("");
   const [mintLoading, setMintLoading] = useState(false);
   const [burnLoading, setBurnLoading] = useState(false);
+  const [sendLoading, setSendLoading] = useState(false);
 
   const handleMintSubmit = async (event) => {
     event.preventDefault();
@@ -195,6 +251,25 @@ function StatusContract({
     setBurnLoading(false);
   };
 
+  const handleSendSubmit = async (event) => {
+    event.preventDefault();
+    setSendLoading(true);
+    console.log("Send amount:", sendAmount, "Recipient:", recipient);
+    const hash = await getWriteFunction(
+      "transfer",
+      [recipient, parseEther(sendAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
+    setSendAmount(0);
+    setRecipient("");
+    setSendLoading(false);
+  };
+
   return (
     <div>
       <h1>Busd Informations</h1>
@@ -203,7 +278,7 @@ function StatusContract({
       <h2>Your balance: {balanceBusd} BUSD</h2>
 
       <div>
-        <h2>Transaction</h2>
+        <h2>Transactions</h2>
       </div>
 
       <div>
@@ -233,18 +308,80 @@ function StatusContract({
             <button type="submit">Burn</button>
           </form>
         )}
+        <h2>Send BUSD</h2>
+        {sendLoading ? (
+          <CircleLoader color={"#000000"} loading={sendLoading} />
+        ) : (
+          <form onSubmit={handleSendSubmit}>
+            <input
+              type="text"
+              placeholder="Recipient Address"
+              value={recipient}
+              onChange={(event) => setRecipient(event.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={sendAmount}
+              onChange={(event) => setSendAmount(event.target.value)}
+            />
+            <button type="submit">Send</button>
+          </form>
+        )}
       </div>
     </div>
   );
 }
 
 function Status({ address, balance }) {
+  const [sendLoading, setSendLoading] = useState(false);
+
+  const [sendAmount, setSendAmount] = useState(0);
+  const [recipient, setRecipient] = useState("");
+  const handleSendSubmit = async (event) => {
+    event.preventDefault();
+    setSendLoading(true);
+    console.log("Send amount:", sendAmount, "Recipient:", recipient);
+    const hash = await getWriteFunction(
+      "transfer",
+      [recipient, parseEther(sendAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
+    setSendAmount(0);
+    setRecipient("");
+    setSendLoading(false);
+  };
+
   if (address) {
     return (
       <div>
-        <h1>Personal informations</h1>
-        <h2>Your address: {address}</h2>
+        <h1>Matic informations</h1>
         <h2>Balance: {formatEther(balance.toString())} MATIC</h2>
+        <h2>Send Matic</h2>
+        {sendLoading ? (
+          <CircleLoader color={"#000000"} loading={sendLoading} />
+        ) : (
+          <form onSubmit={handleSendSubmit}>
+            <input
+              type="text"
+              placeholder="Recipient Address"
+              value={recipient}
+              onChange={(event) => setRecipient(event.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={sendAmount}
+              onChange={(event) => setSendAmount(event.target.value)}
+            />
+            <button type="submit">Send</button>
+          </form>
+        )}
       </div>
     );
   }
