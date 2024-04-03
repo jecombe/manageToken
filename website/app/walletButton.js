@@ -49,9 +49,10 @@ export default function WalletButton() {
           });
 
         setContract(contract);
+        console.log(";;;;;;;;;;;;;;;;;;;;;;;;;", contract);
       } catch (error) {
         setIsConnect(false);
-        alert(`Transaction failed: ${error}`);
+        console.error(error);
       }
     }
   }
@@ -73,6 +74,8 @@ export default function WalletButton() {
           {isConnect ? "Disconnect Wallet" : "Connect Wallet"}
         </h1>
       </button>
+      <hr style={{ width: "100%", borderTop: "3px solid black" }} />
+
       {isConnect ? (
         <>
           <Status address={address} balance={balance} />
