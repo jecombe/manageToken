@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
 import { formatEther, getContract } from "viem";
@@ -15,7 +16,6 @@ export default function WalletButton() {
 
   async function handleClick() {
     if (isConnect) {
-      //   await ConnectWalletClient().
       setIsConnect(false);
       setAddress(null);
       setBalance(null);
@@ -57,7 +57,9 @@ export default function WalletButton() {
   }
 
   return (
-    <>
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
       <button
         className="px-8 py-2 rounded-md bg-[#1e2124] flex flex-row items-center justify-center border border-[#1e2124] hover:border hover:border-indigo-600 shadow-md shadow-indigo-500/10"
         onClick={handleClick}
@@ -74,12 +76,13 @@ export default function WalletButton() {
       {isConnect ? (
         <>
           <Status address={address} balance={balance} />
+          <hr style={{ width: "100%", borderTop: "3px solid black" }} />
           <StatusContract contract={contract} totalSupply={totalSupply} />
         </>
       ) : (
         <h1> Need to connect to your metamask</h1>
       )}
-    </>
+    </div>
   );
 }
 
