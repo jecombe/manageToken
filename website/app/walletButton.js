@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
 import { formatEther, getContract } from "viem";
@@ -15,36 +14,45 @@ export default function WalletButton() {
   const [contract, setContract] = useState(null);
 
   async function handleClick() {
-    try {
-      const [address] = await ConnectWalletClient().getAddresses();
-      const balance = await ConnectPublicClient().getBalance({ address });
+    if (isConnect) {
+      //   await ConnectWalletClient().
+      setIsConnect(false);
+      setAddress(null);
+      setBalance(null);
+      setTotalSupply(null);
+      setContract(null);
+    } else {
+      try {
+        const [address] = await ConnectWalletClient().getAddresses();
+        const balance = await ConnectPublicClient().getBalance({ address });
 
-      setAddress(address);
-      setBalance(balance);
-      setIsConnect(true);
+        setAddress(address);
+        setBalance(balance);
+        setIsConnect(true);
 
-      const contract = getContract({
-        address: contractBusd,
-        abi,
-        publicClient: ConnectPublicClient(),
-        walletClient: ConnectWalletClient(),
-      });
-
-      ConnectPublicClient()
-        .readContract({
+        const contract = getContract({
           address: contractBusd,
           abi,
-          functionName: "totalSupply",
-        })
-        .then((totalSupply) => {
-          const totalSupplyInEther = formatEther(totalSupply);
-          setTotalSupply(totalSupplyInEther);
+          publicClient: ConnectPublicClient(),
+          walletClient: ConnectWalletClient(),
         });
 
-      setContract(contract);
-    } catch (error) {
-      setIsConnect(false);
-      alert(`Transaction failed: ${error}`);
+        ConnectPublicClient()
+          .readContract({
+            address: contractBusd,
+            abi,
+            functionName: "totalSupply",
+          })
+          .then((totalSupply) => {
+            const totalSupplyInEther = formatEther(totalSupply);
+            setTotalSupply(totalSupplyInEther);
+          });
+
+        setContract(contract);
+      } catch (error) {
+        setIsConnect(false);
+        alert(`Transaction failed: ${error}`);
+      }
     }
   }
 
@@ -59,7 +67,9 @@ export default function WalletButton() {
           alt="MetaMask Fox"
           style={{ width: "25px", height: "25px" }}
         />
-        <h1 className="mx-auto">Connect Wallet</h1>
+        <h1 className="mx-auto">
+          {isConnect ? "Disconnect Wallet" : "Connect Wallet"}
+        </h1>
       </button>
       {isConnect ? (
         <>
@@ -77,7 +87,7 @@ function StatusContract({ contract, totalSupply }) {
   return (
     <div>
       <h1>Busd Informations</h1>
-      <p>Total Supply: {totalSupply}</p>
+      <h2>Total Supply: {totalSupply} BUSD</h2>
     </div>
   );
 }
@@ -86,7 +96,7 @@ function Status({ address, balance }) {
   if (address) {
     return (
       <div>
-        <h1>Personnal informations</h1>
+        <h1>Personal informations</h1>
         <h2>Your address {address}</h2>
         <h2>Balance {formatEther(balance.toString())}</h2>
       </div>
