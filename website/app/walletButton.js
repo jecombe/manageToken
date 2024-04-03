@@ -13,7 +13,15 @@ export default function WalletButton() {
   );
   const [totalSupply, setTotalSupply] = useState(null);
   const [contract, setContract] = useState(null);
+  const [owner, setOwner] = useState(null);
 
+  const getCallFunction = async (functionName) => {
+    return ConnectPublicClient().readContract({
+      address: contractBusd,
+      abi,
+      functionName,
+    });
+  };
   async function handleClick() {
     if (isConnect) {
       setIsConnect(false);
@@ -37,19 +45,14 @@ export default function WalletButton() {
           walletClient: ConnectWalletClient(),
         });
 
-        ConnectPublicClient()
-          .readContract({
-            address: contractBusd,
-            abi,
-            functionName: "totalSupply",
-          })
-          .then((totalSupply) => {
-            const totalSupplyInEther = formatEther(totalSupply);
-            setTotalSupply(totalSupplyInEther);
-          });
+        const totalSupply = await getCallFunction("totalSupply");
 
+        const totalSupplyInEther = formatEther(totalSupply);
+        setTotalSupply(totalSupplyInEther);
+
+        const ownerAddr = await getCallFunction("getOwner");
+        setOwner(ownerAddr);
         setContract(contract);
-        console.log(";;;;;;;;;;;;;;;;;;;;;;;;;", contract);
       } catch (error) {
         setIsConnect(false);
         console.error(error);
@@ -78,9 +81,17 @@ export default function WalletButton() {
 
       {isConnect ? (
         <>
-          <Status address={address} balance={balance} />
+          <Status address={address} balance={Math.round(Number(balance))} />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
-          <StatusContract contract={contract} totalSupply={totalSupply} />
+
+          <span style={{ color: owner === address ? "green" : "red" }}>
+            {owner === address ? "you are the owner" : "you are not the owner"}
+          </span>
+          <StatusContract
+            contract={contract}
+            totalSupply={Math.round(totalSupply)}
+            owner={owner}
+          />
         </>
       ) : (
         <h1> Need to connect to your metamask</h1>
@@ -89,10 +100,11 @@ export default function WalletButton() {
   );
 }
 
-function StatusContract({ contract, totalSupply }) {
+function StatusContract({ contract, totalSupply, owner }) {
   return (
     <div>
       <h1>Busd Informations</h1>
+      <h2>Owner contract: {owner}</h2>
       <h2>Total Supply: {totalSupply} BUSD</h2>
     </div>
   );
