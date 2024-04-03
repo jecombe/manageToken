@@ -4,6 +4,8 @@ import { ConnectWalletClient, ConnectPublicClient } from "./client";
 import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 
+import abi from "./abi";
+
 const getWriteFunction = async (functionName, args, addressFrom) => {
   return ConnectWalletClient().writeContract({
     abi,
@@ -33,36 +35,48 @@ export default function StatusContract({
     event.preventDefault();
     setMintLoading(true);
     console.log("Mint amount:", mintAmount);
-    const hash = await getWriteFunction(
-      "mint",
-      [parseEther(mintAmount)],
-      userAddr
-    );
-    await ConnectPublicClient().waitForTransactionReceipt({
-      hash,
-    });
+    try {
+      const hash = await getWriteFunction(
+        "mint",
+        [parseEther(mintAmount)],
+        userAddr
+      );
+      await ConnectPublicClient().waitForTransactionReceipt({
+        hash,
+      });
 
-    console.log("finish");
-    setMintAmount(0);
-    setMintLoading(false);
+      console.log("finish");
+      setMintAmount(0);
+      setMintLoading(false);
+    } catch (error) {
+      console.error(error);
+      setMintAmount(0);
+      setMintLoading(false);
+    }
   };
 
   const handleBurnSubmit = async (event) => {
     event.preventDefault();
     setBurnLoading(true);
     console.log("Burn amount:", burnAmount);
-    const hash = await getWriteFunction(
-      "burn",
-      [parseEther(burnAmount)],
-      userAddr
-    );
-    await ConnectPublicClient().waitForTransactionReceipt({
-      hash,
-    });
+    try {
+      const hash = await getWriteFunction(
+        "burn",
+        [parseEther(burnAmount)],
+        userAddr
+      );
+      await ConnectPublicClient().waitForTransactionReceipt({
+        hash,
+      });
 
-    console.log("finish");
-    setBurnAmount(0);
-    setBurnLoading(false);
+      console.log("finish");
+      setBurnAmount(0);
+      setBurnLoading(false);
+    } catch (error) {
+      console.error(error);
+      setBurnLoading(false);
+      setBurnAmount(0);
+    }
   };
 
   const handleSendSubmit = async (event) => {
@@ -86,7 +100,7 @@ export default function StatusContract({
 
   return (
     <div>
-      <h1>Busd Informations</h1>
+      <h1>BUSD</h1>
       <h2>Owner contract: {owner}</h2>
       <h2>Total Supply: {totalSupply} BUSD</h2>
       <h2>Your balance: {balanceBusd} BUSD</h2>
