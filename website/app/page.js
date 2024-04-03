@@ -1,7 +1,26 @@
 "use client";
-
 import styles from "./page.module.css";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { polygonMumbai } from "viem/chains";
+// import { ConnectWalletClient } from "./connect";
+import { createPublicClient, http } from "viem";
+import WalletButton from "./walletButton";
+
+function Connect() {
+  let transport;
+  if (window.ethereum) {
+    transport = custom(window.ethereum);
+  } else {
+    const errorMessage =
+      "MetaMask or another web3 wallet is not installed. Please install one to proceed.";
+    throw new Error(errorMessage);
+  }
+  const publicClient = createPublicClient({
+    chain: polygonMumbai,
+    transport: transport,
+  });
+  return publicClient;
+}
 
 export default function Home() {
   const [accountBalance, setAccountBalance] = useState(0);
@@ -43,7 +62,7 @@ export default function Home() {
     // await manageData();
   };
 
-  useEffect(() => {
+  /* useEffect(() => {
     const init = async () => {
       if (window.ethereum) {
         window.ethereum.on("accountsChanged", handleAccountsChanged);
@@ -58,11 +77,14 @@ export default function Home() {
         window.ethereum.off("accountsChanged", handleAccountsChanged);
       }
     };
-  }, []);
+  }, []);*/
 
   return (
     <main className={styles.main}>
-      <div className={styles.description}></div>
+      <div className={styles.description}>
+        <h1>Connect wallet</h1>
+        <WalletButton />
+      </div>
     </main>
   );
 }
