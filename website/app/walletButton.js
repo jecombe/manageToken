@@ -10,6 +10,8 @@ export default function WalletButton() {
   const [balanceBusd, setBalanceBusd] = useState(null);
 
   const [isConnect, setIsConnect] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [contractBusd, setContractBusd] = useState(
     "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
   );
@@ -30,7 +32,7 @@ export default function WalletButton() {
       } catch (error) {
         console.error("Error updating balances:", error);
       }
-    }, 3000);
+    }, 10000);
 
     return () => clearInterval(intervalId);
   }, [isConnect, address]);
@@ -53,6 +55,7 @@ export default function WalletButton() {
       setContract(null);
     } else {
       try {
+        setIsLoading(true); // Activer le chargement
         const [address] = await ConnectWalletClient().getAddresses();
         const balance = await ConnectPublicClient().getBalance({ address });
 
@@ -78,6 +81,8 @@ export default function WalletButton() {
       } catch (error) {
         setIsConnect(false);
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     }
   }
@@ -90,14 +95,20 @@ export default function WalletButton() {
         className="px-8 py-2 rounded-md bg-[#1e2124] flex flex-row items-center justify-center border border-[#1e2124] hover:border hover:border-indigo-600 shadow-md shadow-indigo-500/10"
         onClick={handleClick}
       >
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg"
-          alt="MetaMask Fox"
-          style={{ width: "25px", height: "25px" }}
-        />
-        <h1 className="mx-auto">
-          {isConnect ? "Disconnect Wallet" : "Connect Wallet"}
-        </h1>
+        {isLoading ? (
+          <div className="loader"></div>
+        ) : (
+          <>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg"
+              alt="MetaMask Fox"
+              style={{ width: "25px", height: "25px" }}
+            />
+            <h1 className="mx-auto">
+              {isConnect ? "Disconnect Wallet" : "Connect Wallet"}
+            </h1>
+          </>
+        )}
       </button>
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
@@ -114,6 +125,7 @@ export default function WalletButton() {
             totalSupply={Math.round(totalSupply)}
             owner={owner}
             balanceBusd={balanceBusd}
+            userAddr={address}
           />
         </>
       ) : (
@@ -123,16 +135,23 @@ export default function WalletButton() {
   );
 }
 
-const getWriteFunction = async (functionName, args) => {
+const getWriteFunction = async (functionName, args, addressFrom) => {
   return ConnectWalletClient().writeContract({
     abi,
+    account: addressFrom,
     functionName,
     address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
     args,
   });
 };
 
-function StatusContract({ contract, totalSupply, owner, balanceBusd }) {
+function StatusContract({
+  contract,
+  totalSupply,
+  owner,
+  balanceBusd,
+  userAddr,
+}) {
   const [mintAmount, setMintAmount] = useState(0);
   const [burnAmount, setBurnAmount] = useState(0);
 
@@ -143,7 +162,7 @@ function StatusContract({ contract, totalSupply, owner, balanceBusd }) {
   const handleMintSubmit = async (event) => {
     event.preventDefault();
     console.log("Mint amount:", mintAmount);
-    const ret = await getWriteFunction("mint", [mintAmount]);
+    const ret = await getWriteFunction("mint", [mintAmount], userAddr);
     console.log(ret);
     setMintAmount(0);
   };
@@ -184,6 +203,7 @@ function StatusContract({ contract, totalSupply, owner, balanceBusd }) {
     </div>
   );
 }
+
 function Status({ address, balance }) {
   if (address) {
     return (
