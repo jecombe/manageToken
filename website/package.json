@@ -13,7 +13,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-spinners": "^0.13.8",
-    "viem": "^2.9.6"
+    "viem": "^2.9.9"
   },
   "devDependencies": {
     "eslint": "^8",
