@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
 import { createWalletClient, custom, formatEther, getContract, parseEther } from "viem";
-import { PropagateLoader, CircleLoader } from "react-spinners";
+import { PropagateLoader } from "react-spinners";
 
 import abi from "./abi";
 import Status from "./status";
@@ -25,9 +25,12 @@ export default function WalletButton() {
   const [owner, setOwner] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
 
-  /*useEffect(() => {
+  useEffect(() => {
+    checkNetwork();
+  }, []);
+
+  useEffect(() => {
     const intervalId = setInterval(async () => {
-      console.log("update balance");
       try {
         if (isConnect) {
           const balance = await ConnectPublicClient().getBalance({ address });
@@ -41,19 +44,17 @@ export default function WalletButton() {
     }, 60000);
 
     return () => clearInterval(intervalId);
-  }, [isConnect, address]);*/
+  }, [isConnect, address]);
 
   useEffect(() => {
     const handleAccountsChanged = async (accounts) => {
       if (accounts.length === 0) {
-        // Metamask account disconnected
         setIsConnect(false);
         setAddress(null);
         setBalance(null);
         setTotalSupply(null);
         setContract(null);
       } else {
-        // Metamask account changed
         try {
           setIsLoading(true);
           const address = accounts[0];
@@ -80,7 +81,7 @@ export default function WalletButton() {
           setBalanceBusd(formatEther(balanceOf));
 
           // Check network when account changes
-          //await checkNetwork();
+          ///await checkNetwork();
         } catch (error) {
           setIsConnect(false);
           console.error(error);
@@ -99,7 +100,7 @@ export default function WalletButton() {
 
   useEffect(() => {
     // Check network when component mounts
-    checkNetwork();
+  //  checkNetwork();
 
     // Listen for network changes
     window.ethereum.on("networkChanged", handleNetworkChanged);
@@ -109,12 +110,56 @@ export default function WalletButton() {
     };
   }, []);
 
-  const checkNetwork = async () => {
+  const connectToMumbai = async () => {
     try {
-      const network = await window.ethereum.request({ method: "net_version" });
-      setCurrentNetwork(network);
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: "0x13881",
+            chainName: "Mumbai",
+            nativeCurrency: {
+              name: "MATIC",
+              symbol: "MATIC",
+              decimals: 18,
+            },
+            rpcUrls: ["https://rpc.ankr.com/polygon_mumbai"],
+            blockExplorerUrls: ["https://mumbai.polygonscan.com"],
+          },
+        ],
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      console.error("Error checking network:", error);
+      console.error("Error connecting to Mumbai testnet:", error);
+      return error;
+    }
+  };
+
+
+  const checkNetwork = async () => {
+    if (window.ethereum) {
+      try {
+        const networkId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
+
+        if (networkId !== "0x13881") {
+          const userResponse = window.confirm(
+            "Please switch to Mumbai testnet network to use this application. Do you want to switch now?"
+          );
+
+          if (userResponse) {
+            await connectToMumbai();
+            
+          }
+        }
+        setCurrentNetwork(networkId)
+
+      } catch (error) {
+        console.error("Error checking network:", error);
+        return error;
+      }
     }
   };
 
@@ -163,18 +208,15 @@ export default function WalletButton() {
       setContract(null);
     } else {
       try {
-        setIsLoading(true); // Activer le chargement
+        setIsLoading(true);
         const client = createWalletClient({
           chain: polygonMumbai,
           transport: custom(window.ethereum)
         })
 
-        console.log(client);
-        const r = await client.requestAddresses()
-        console.log(r);
-        // const address = ConnectWalletClient().account.address
-        // console.log(address);
-        /*const balance = await ConnectPublicClient().getBalance({ address });
+        const [address] = await client.requestAddresses()
+        
+        const balance = await ConnectPublicClient().getBalance({ address });
 
         setAddress(address);
         setBalance(balance);
@@ -185,9 +227,9 @@ export default function WalletButton() {
           abi,
           publicClient: ConnectPublicClient(),
           walletClient: ConnectWalletClient(),
-        });*/
+        });
 
-       /* const totalSupply = await getCallFunction("totalSupply");
+       const totalSupply = await getCallFunction("totalSupply");
         const ownerAddr = await getCallFunction("getOwner");
         const balanceOf = await getCallFunction("balanceOf", [address]);
 
@@ -197,7 +239,7 @@ export default function WalletButton() {
         setBalanceBusd(formatEther(balanceOf));
 
         // Check network when connecting wallet
-        await checkNetwork();*/
+      //  await checkNetwork();
       } catch (error) {
         setIsConnect(false);
         console.error(error);
@@ -231,10 +273,11 @@ export default function WalletButton() {
         )}
       </button>
       <h2>{address}</h2>
-
+          {console.log(currentNetwork)}
       {currentNetwork && currentNetwork !== "YOUR_NETWORK_ID" ? (
         <button onClick={addNetwork}>Add Network</button>
       ) : null}
+
 
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
