@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
-import { formatEther, getContract, parseEther } from "viem";
+import { createWalletClient, custom, formatEther, getContract, parseEther } from "viem";
 import { PropagateLoader, CircleLoader } from "react-spinners";
 
 import abi from "./abi";
 import Status from "./status";
 import StatusContract from "./statusContract";
+import { polygonMumbai } from "viem/chains";
 
 export default function WalletButton() {
   const [address, setAddress] = useState(null);
@@ -24,7 +25,7 @@ export default function WalletButton() {
   const [owner, setOwner] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
 
-  useEffect(() => {
+  /*useEffect(() => {
     const intervalId = setInterval(async () => {
       console.log("update balance");
       try {
@@ -40,7 +41,7 @@ export default function WalletButton() {
     }, 60000);
 
     return () => clearInterval(intervalId);
-  }, [isConnect, address]);
+  }, [isConnect, address]);*/
 
   useEffect(() => {
     const handleAccountsChanged = async (accounts) => {
@@ -79,7 +80,7 @@ export default function WalletButton() {
           setBalanceBusd(formatEther(balanceOf));
 
           // Check network when account changes
-          await checkNetwork();
+          //await checkNetwork();
         } catch (error) {
           setIsConnect(false);
           console.error(error);
@@ -163,8 +164,17 @@ export default function WalletButton() {
     } else {
       try {
         setIsLoading(true); // Activer le chargement
-        const [address] = await ConnectWalletClient().getAddresses();
-        const balance = await ConnectPublicClient().getBalance({ address });
+        const client = createWalletClient({
+          chain: polygonMumbai,
+          transport: custom(window.ethereum)
+        })
+
+        console.log(client);
+        const r = await client.requestAddresses()
+        console.log(r);
+        // const address = ConnectWalletClient().account.address
+        // console.log(address);
+        /*const balance = await ConnectPublicClient().getBalance({ address });
 
         setAddress(address);
         setBalance(balance);
@@ -175,9 +185,9 @@ export default function WalletButton() {
           abi,
           publicClient: ConnectPublicClient(),
           walletClient: ConnectWalletClient(),
-        });
+        });*/
 
-        const totalSupply = await getCallFunction("totalSupply");
+       /* const totalSupply = await getCallFunction("totalSupply");
         const ownerAddr = await getCallFunction("getOwner");
         const balanceOf = await getCallFunction("balanceOf", [address]);
 
@@ -187,7 +197,7 @@ export default function WalletButton() {
         setBalanceBusd(formatEther(balanceOf));
 
         // Check network when connecting wallet
-        await checkNetwork();
+        await checkNetwork();*/
       } catch (error) {
         setIsConnect(false);
         console.error(error);

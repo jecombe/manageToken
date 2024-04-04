@@ -32,7 +32,7 @@ export function ConnectPublicClient() {
   }
   const publicClient = createPublicClient({
     chain: polygonMumbai,
-    transport: transport,
+    transport: http(),
   });
   return publicClient;
 }
