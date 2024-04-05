@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
 import abi from "../../utils/abi";
-import "./owner.css"; // Import du fichier de style CSS
+import "./owner.css";
 
 export default function Owner({ owner, address }) {
   const [newOwnerAddress, setNewOwnerAddress] = useState("");
@@ -53,26 +53,29 @@ export default function Owner({ owner, address }) {
   return (
     <>
       <span style={{ color: owner === address ? "green" : "red" }}>
-        {owner === address ? "You are the owner" : "You are not the owner"}
-      </span>
-      <div className="owner-container">
-        {owner === address && (
-          <div className="action-section">
-            <input
-              type="text"
-              value={newOwnerAddress}
-              onChange={handleNewOwnerAddressChange}
-              placeholder="New Owner Address"
-            />
-            <button className="transfer-button" onClick={transferOwnership}>
-              Transfer Ownership
-            </button>
-            <button className="renounce-button" onClick={renounceOwnership}>
-              Renounce Ownership
-            </button>
+        {owner === address ? (
+          <div className="owner-container">
+            {owner === address && (
+              <div className="action-section">
+                <input
+                  type="text"
+                  value={newOwnerAddress}
+                  onChange={handleNewOwnerAddressChange}
+                  placeholder="New Owner Address"
+                />
+                <button className="transfer-button" onClick={transferOwnership}>
+                  Transfer Ownership
+                </button>
+                <button className="renounce-button" onClick={renounceOwnership}>
+                  Renounce Ownership
+                </button>
+              </div>
+            )}
           </div>
+        ) : (
+          "You are not the owner"
         )}
-      </div>
+      </span>
     </>
   );
 }

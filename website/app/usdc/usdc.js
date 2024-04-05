@@ -1,19 +1,8 @@
 import React, { useState } from "react";
-import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
 import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
-import abi from "../../utils/abi";
-import "./usdc.css"; // Import du fichier de style CSS
-
-const getWriteFunction = async (functionName, args, addressFrom) => {
-  return ConnectWalletClient().writeContract({
-    abi,
-    account: addressFrom,
-    functionName,
-    address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
-    args,
-  });
-};
+import "./usdc.css";
+import { getWriteFunction, waitingTransaction } from "@/utils/utils";
 
 export default function Usdc({
   contract,
@@ -30,14 +19,14 @@ export default function Usdc({
   const [approveRecipient, setApproveRecipient] = useState("");
   const [transferFromAmount, setTransferFromAmount] = useState(0);
   const [transferFromRecipient, setTransferFromRecipient] = useState("");
-  const [allowanceAmount, setAllowanceAmount] = useState(0); // Nouvel état pour le montant d'allocation
-  const [allowanceRecipient, setAllowanceRecipient] = useState(""); // Nouvel état pour le destinataire de l'allocation
+  const [allowanceAmount, setAllowanceAmount] = useState(0);
+  const [allowanceRecipient, setAllowanceRecipient] = useState("");
   const [mintLoading, setMintLoading] = useState(false);
   const [burnLoading, setBurnLoading] = useState(false);
   const [sendLoading, setSendLoading] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
   const [transferFromLoading, setTransferFromLoading] = useState(false);
-  const [allowanceLoading, setAllowanceLoading] = useState(false); // Nouvel état pour le chargement de l'allocation
+  const [allowanceLoading, setAllowanceLoading] = useState(false);
 
   const handleMintSubmit = async (event) => {
     event.preventDefault();
@@ -49,9 +38,7 @@ export default function Usdc({
         [parseEther(mintAmount)],
         userAddr
       );
-      await ConnectPublicClient().waitForTransactionReceipt({
-        hash,
-      });
+      await waitingTransaction(hash);
 
       console.log("finish");
       setMintAmount(0);
@@ -73,9 +60,7 @@ export default function Usdc({
         [parseEther(burnAmount)],
         userAddr
       );
-      await ConnectPublicClient().waitForTransactionReceipt({
-        hash,
-      });
+      await waitingTransaction(hash);
 
       console.log("finish");
       setBurnAmount(0);
@@ -96,9 +81,7 @@ export default function Usdc({
       [recipient, parseEther(sendAmount)],
       userAddr
     );
-    await ConnectPublicClient().waitForTransactionReceipt({
-      hash,
-    });
+    await waitingTransaction(hash);
 
     console.log("finish");
     setSendAmount(0);
@@ -120,9 +103,7 @@ export default function Usdc({
       [approveRecipient, parseEther(approveAmount)],
       userAddr
     );
-    await ConnectPublicClient().waitForTransactionReceipt({
-      hash,
-    });
+    await waitingTransaction(hash);
 
     console.log("finish");
     setApproveAmount(0);
@@ -144,9 +125,7 @@ export default function Usdc({
       [userAddr, transferFromRecipient, parseEther(transferFromAmount)],
       userAddr
     );
-    await ConnectPublicClient().waitForTransactionReceipt({
-      hash,
-    });
+    await waitingTransaction(hash);
 
     console.log("finish");
     setTransferFromAmount(0);
@@ -168,9 +147,7 @@ export default function Usdc({
       [userAddr, allowanceRecipient, parseEther(allowanceAmount)],
       userAddr
     );
-    await ConnectPublicClient().waitForTransactionReceipt({
-      hash,
-    });
+    await waitingTransaction(hash);
 
     console.log("finish");
     setAllowanceAmount(0);

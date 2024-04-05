@@ -41,3 +41,9 @@ export const createWallet = () => {
 export const getBalanceUser = (address) => {
   return ConnectPublicClient().getBalance({ address });
 };
+
+export const waitingTransaction = (hash) => {
+  return ConnectPublicClient().waitForTransactionReceipt({
+    hash,
+  });
+};
