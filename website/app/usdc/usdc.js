@@ -4,13 +4,7 @@ import { CircleLoader } from "react-spinners";
 import "./usdc.css";
 import { getWriteFunction, waitingTransaction } from "@/utils/utils";
 
-export default function Usdc({
-  contract,
-  totalSupply,
-  owner,
-  balanceBusd,
-  userAddr,
-}) {
+export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
   const [mintAmount, setMintAmount] = useState(0);
   const [burnAmount, setBurnAmount] = useState(0);
   const [sendAmount, setSendAmount] = useState(0);

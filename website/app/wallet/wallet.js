@@ -6,12 +6,7 @@ import { PropagateLoader } from "react-spinners";
 import Matic from "../matic/matic";
 import Usdc from "../usdc/usdc";
 import Owner from "../owner/owner";
-import {
-  createWallet,
-  getBalanceUser,
-  getContractInfo,
-  getReadFunction,
-} from "@/utils/utils";
+import { createWallet, getBalanceUser, getReadFunction } from "@/utils/utils";
 import { networks } from "@/utils/networks";
 
 export default function Wallet() {
@@ -24,7 +19,6 @@ export default function Wallet() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [totalSupply, setTotalSupply] = useState(null);
-  const [contract, setContract] = useState(null);
   const [owner, setOwner] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
 
@@ -36,15 +30,12 @@ export default function Wallet() {
       setBalance(balance);
       setIsConnect(true);
 
-      const contract = getContractInfo();
-
       const totalSupply = await getReadFunction("totalSupply");
       const ownerAddr = await getReadFunction("getOwner");
       const balanceOf = await getReadFunction("balanceOf", [address]);
 
       setTotalSupply(formatEther(totalSupply));
       setOwner(ownerAddr);
-      setContract(contract);
       setBalanceBusd(formatEther(balanceOf));
     } catch (error) {
       console.error(error);
@@ -55,15 +46,25 @@ export default function Wallet() {
     checkNetwork();
   }, []);
 
+  const updateBalance = async () => {
+    try {
+      if (isConnect) {
+        console.log("UPDATE BALANCE");
+        const balance = await getBalanceUser(address);
+        const balanceOf = await getReadFunction("balanceOf", [address]);
+        setBalance(balance);
+        setBalanceBusd(formatEther(balanceOf));
+      }
+    } catch (error) {
+      console.error("Error updating balances:", error);
+    }
+  };
+
   useEffect(() => {
     const intervalId = setInterval(async () => {
       try {
         if (isConnect) {
-          console.log("UPDATE BALANCE");
-          const balance = await getBalanceUser(address);
-          const balanceOf = await getReadFunction("balanceOf", [address]);
-          setBalance(balance);
-          setBalanceBusd(formatEther(balanceOf));
+          updateBalance();
         }
       } catch (error) {
         console.error("Error updating balances:", error);
@@ -217,7 +218,13 @@ export default function Wallet() {
       {currentNetwork && currentNetwork !== "YOUR_NETWORK_ID" ? (
         <button onClick={addNetwork}>Zama devnet</button>
       ) : null}
-
+      <button onClick={updateBalance} disabled={isLoading}>
+        {isLoading ? (
+          <PropagateLoader color={"#ffffff"} loading={isLoading} />
+        ) : (
+          "Refresh Balances"
+        )}
+      </button>
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
       {isConnect && !isLoading ? (
@@ -228,7 +235,6 @@ export default function Wallet() {
           <Matic address={address} balance={Math.round(Number(balance))} />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
           <Usdc
-            contract={contract}
             totalSupply={Math.round(totalSupply)}
             owner={owner}
             balanceBusd={balanceBusd}
