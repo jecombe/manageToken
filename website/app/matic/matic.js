@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
 import { formatEther, parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./matic.css";
