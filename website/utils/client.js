@@ -1,4 +1,3 @@
-// client.ts
 import { createWalletClient, createPublicClient, custom, http } from "viem";
 import { polygonMumbai } from "viem/chains";
 import "viem/window";

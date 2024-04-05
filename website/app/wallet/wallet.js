@@ -106,10 +106,10 @@ export default function Wallet() {
     //  checkNetwork();
 
     // Listen for network changes
-    window.ethereum.on("networkChanged", handleNetworkChanged);
+    window.ethereum.on("chainChanged", handleNetworkChanged);
 
     return () => {
-      window.ethereum.removeListener("networkChanged", handleNetworkChanged);
+      window.ethereum.removeListener("chainChanged", handleNetworkChanged);
     };
   }, []);
 
