@@ -33,7 +33,7 @@ export default function Wallet() {
       abi,
       account: addressFrom,
       functionName,
-      address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
+      address: process.env.CONTRACT,
       args,
     });
   };
@@ -47,7 +47,7 @@ export default function Wallet() {
       setIsConnect(true);
 
       const contract = getContract({
-        address: contractBusd,
+        address: process.env.CONTRACT,
         abi,
         publicClient: ConnectPublicClient(),
         walletClient: ConnectWalletClient(),
@@ -180,6 +180,7 @@ export default function Wallet() {
 
   const handleNetworkChanged = async (networkId) => {
     setCurrentNetwork(networkId);
+    checkNetwork();
   };
 
   const addNetwork = async () => {
@@ -188,15 +189,15 @@ export default function Wallet() {
         method: "wallet_addEthereumChain",
         params: [
           {
-            chainId: "0x89",
-            chainName: "Your Network",
-            rpcUrls: ["https://your-rpc-url.com"],
+            chainId: "0x1f49",
+            chainName: "Zama Network",
             nativeCurrency: {
-              name: "Your Currency",
-              symbol: "YOUR",
+              name: "ZAMA",
+              symbol: "ZAMA",
               decimals: 18,
             },
-            blockExplorerUrls: ["https://your-block-explorer-url.com"],
+            rpcUrls: ["https://devnet.zama.ai"],
+            blockExplorerUrls: ["https://main.explorer.zama.ai"],
           },
         ],
       });
@@ -239,42 +240,6 @@ export default function Wallet() {
     }
   }
 
-  const renounceOwnership = async () => {
-    try {
-      const hash = await getWriteFunction("renounceOwnership", [], address);
-      await ConnectPublicClient().waitForTransactionReceipt({
-        hash,
-      });
-
-      console.log("Ownership renounced successfully");
-    } catch (error) {
-      console.error("Error while renouncing ownership:", error);
-    }
-  };
-
-  // Fonction pour transférer la propriété
-  const transferOwnership = async () => {
-    try {
-      const hash = await getWriteFunction(
-        "transferOwnership",
-        [newOwnerAddress],
-        address
-      );
-      await ConnectPublicClient().waitForTransactionReceipt({
-        hash,
-      });
-
-      console.log("Ownership transferred successfully");
-    } catch (error) {
-      console.error("Error while transferring ownership:", error);
-    }
-  };
-
-  // Gestionnaire pour mettre à jour l'adresse du nouveau propriétaire
-  const handleNewOwnerAddressChange = (event) => {
-    setNewOwnerAddress(event.target.value);
-  };
-
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -301,7 +266,7 @@ export default function Wallet() {
       <h2>{address}</h2>
       {console.log(currentNetwork)}
       {currentNetwork && currentNetwork !== "YOUR_NETWORK_ID" ? (
-        <button onClick={addNetwork}>Add Network</button>
+        <button onClick={addNetwork}>Zama devnet</button>
       ) : null}
 
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />

@@ -101,7 +101,7 @@ export default function Usdc({
     <>
       <div>
         <h1>BUSD</h1>
-        <h2>Contract: 0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35</h2>
+        <h2>Contract: {process.env.CONTRACT}</h2>
         <h2>Owner: {owner}</h2>
         <h2>Total Supply: {totalSupply} BUSD</h2>
         <h2>Balance: {balanceBusd} BUSD</h2>{" "}

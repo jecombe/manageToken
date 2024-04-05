@@ -11,7 +11,7 @@ export default function Owner({ owner, address }) {
       abi,
       account: addressFrom,
       functionName,
-      address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
+      address: process.env.CONTRACT,
       args,
     });
   };
@@ -56,7 +56,7 @@ export default function Owner({ owner, address }) {
         {owner === address ? "You are the owner" : "You are not the owner"}
       </span>
       <div className="owner-container">
-        {owner !== address && (
+        {owner === address && (
           <div className="action-section">
             <input
               type="text"
