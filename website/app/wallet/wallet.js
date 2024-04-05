@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { formatEther } from "viem";
-import { PropagateLoader } from "react-spinners";
-
+import { CircleLoader, PropagateLoader } from "react-spinners";
 import Matic from "../matic/matic";
 import Usdc from "../usdc/usdc";
 import Owner from "../owner/owner";
 import { createWallet, getBalanceUser, getReadFunction } from "@/utils/utils";
 import { networks } from "@/utils/networks";
+import "./wallet.css"; // Importez le fichier CSS pour le style du bouton Metamask
 
 export default function Wallet() {
   const [address, setAddress] = useState(null);
@@ -81,7 +81,6 @@ export default function Wallet() {
         setAddress(null);
         setBalance(null);
         setTotalSupply(null);
-        setContract(null);
       } else {
         try {
           setIsLoading(true);
@@ -174,7 +173,6 @@ export default function Wallet() {
       setAddress(null);
       setBalance(null);
       setTotalSupply(null);
-      setContract(null);
     } else {
       try {
         setIsLoading(true);
@@ -194,32 +192,33 @@ export default function Wallet() {
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      <button
-        className="px-8 py-2 rounded-md bg-[#1e2124] flex flex-row items-center justify-center border border-[#1e2124] hover:border hover:border-indigo-600 shadow-md shadow-indigo-500/10"
-        onClick={handleClick}
-      >
+      <button className="metamask-button" onClick={handleClick}>
         {isLoading ? (
-          <PropagateLoader color={"#ffffff"} loading={isLoading} />
+          <CircleLoader color={"#000000"} loading={isLoading} />
         ) : (
           <>
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg"
               alt="MetaMask Fox"
-              style={{ width: "25px", height: "25px" }}
             />
-            <h1 className="mx-auto">
-              {isConnect ? "Disconnect Wallet" : "Connect Wallet"}
-            </h1>
+            <span>{isConnect ? "Disconnect Wallet" : "Connect Wallet"}</span>
           </>
         )}
       </button>
       <h2>{address}</h2>
       {console.log(currentNetwork)}
-      <button onClick={addNetwork}>Zama devnet</button>
+      <button className="zama-devnet-button" onClick={addNetwork}>
+        Zama devnet
+      </button>
+
       {isConnect ? (
-        <button onClick={updateBalance} disabled={isLoading}>
+        <button
+          className="refresh-balances-button"
+          onClick={updateBalance}
+          disabled={isLoading}
+        >
           {isLoading ? (
-            <PropagateLoader color={"#ffffff"} loading={isLoading} />
+            <CircleLoader color={"#ffffff"} loading={isLoading} />
           ) : (
             "Refresh Balances"
           )}

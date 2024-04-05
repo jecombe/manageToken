@@ -4,8 +4,6 @@
   padding: 20px;
   margin: 20px;
   max-width: 400px;
-  margin-right: auto;
-  margin-left: 0;
 }
 
 .usdc-container h1 {
@@ -60,5 +58,5 @@ form button {
 }
 
 .allowance-button {
-  background-color: #28a745; /* Choisissez la couleur de votre choix */
+  background-color: #28a745;
 }

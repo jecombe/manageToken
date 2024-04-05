@@ -40,25 +40,23 @@ export default function Owner({ owner, address }) {
       <span style={{ color: owner === address ? "green" : "red" }}>
         {owner === address ? (
           <div className="owner-container">
-            {owner === address && (
-              <div className="action-section">
-                <input
-                  type="text"
-                  value={newOwnerAddress}
-                  onChange={handleNewOwnerAddressChange}
-                  placeholder="New Owner Address"
-                />
-                <button className="transfer-button" onClick={transferOwnership}>
-                  Transfer Ownership
-                </button>
-                <button className="renounce-button" onClick={renounceOwnership}>
-                  Renounce Ownership
-                </button>
-              </div>
-            )}
+            <div className="action-section">
+              <input
+                type="text"
+                value={newOwnerAddress}
+                onChange={handleNewOwnerAddressChange}
+                placeholder="New Owner Address"
+              />
+              <button className="transfer-button" onClick={transferOwnership}>
+                Transfer Ownership
+              </button>
+              <button className="renounce-button" onClick={renounceOwnership}>
+                Renounce Ownership
+              </button>
+            </div>
           </div>
         ) : (
-          "You are not the owner"
+          <div className="not-owner-text">You are not the owner</div>
         )}
       </span>
     </>
