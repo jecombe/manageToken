@@ -202,17 +202,17 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
             ) : (
               <form onSubmit={handleSendSubmit}>
                 <input
-                  type="text"
-                  placeholder="Recipient Address"
-                  value={recipient}
-                  onChange={(event) => setRecipient(event.target.value)}
-                />
-                <input
                   type="number"
                   min="0"
                   placeholder="Amount"
                   value={sendAmount}
                   onChange={(event) => setSendAmount(event.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Recipient Address"
+                  value={recipient}
+                  onChange={(event) => setRecipient(event.target.value)}
                 />
                 <button type="submit">Send</button>
               </form>
