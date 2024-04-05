@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { formatEther } from "viem";
-import { CircleLoader, PropagateLoader } from "react-spinners";
+import { CircleLoader } from "react-spinners";
 import Matic from "../matic/matic";
 import Usdc from "../usdc/usdc";
 import Owner from "../owner/owner";
 import { createWallet, getBalanceUser, getReadFunction } from "@/utils/utils";
 import { networks } from "@/utils/networks";
-import "./wallet.css"; // Importez le fichier CSS pour le style du bouton Metamask
+import "./wallet.css";
 
 export default function Wallet() {
   const [address, setAddress] = useState(null);
@@ -36,7 +36,7 @@ export default function Wallet() {
 
       setTotalSupply(formatEther(totalSupply));
       setOwner(ownerAddr);
-      setBalanceBusd(formatEther(balanceOf));
+      setBalanceBusd(balanceOf);
     } catch (error) {
       console.error(error);
     }
@@ -51,9 +51,11 @@ export default function Wallet() {
       if (isConnect) {
         console.log("UPDATE BALANCE");
         const balance = await getBalanceUser(address);
+
         const balanceOf = await getReadFunction("balanceOf", [address]);
+
         setBalance(balance);
-        setBalanceBusd(formatEther(balanceOf));
+        setBalanceBusd(balanceOf);
       }
     } catch (error) {
       console.error("Error updating balances:", error);
@@ -102,10 +104,6 @@ export default function Wallet() {
   }, []);
 
   useEffect(() => {
-    // Check network when component mounts
-    //  checkNetwork();
-
-    // Listen for network changes
     window.ethereum.on("chainChanged", handleNetworkChanged);
 
     return () => {
@@ -206,7 +204,6 @@ export default function Wallet() {
         )}
       </button>
       <h2>{address}</h2>
-      {console.log(currentNetwork)}
       <button className="zama-devnet-button" onClick={addNetwork}>
         Zama devnet
       </button>

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { formatEther, parseEther } from "viem";
+import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./usdc.css";
 import {
   getReadFunction,
   getWriteFunction,
+  parseNumberToEth,
   waitingTransaction,
 } from "@/utils/utils";
 
@@ -76,18 +77,25 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
   const handleSendSubmit = async (event) => {
     event.preventDefault();
     setSendLoading(true);
-    console.log("Send amount:", sendAmount, "Recipient:", recipient);
-    const hash = await getWriteFunction(
-      "transfer",
-      [recipient, parseEther(sendAmount)],
-      userAddr
-    );
-    await waitingTransaction(hash);
+    try {
+      console.log("Send amount:", sendAmount, "Recipient:", recipient);
+      const hash = await getWriteFunction(
+        "transfer",
+        [recipient, parseEther(sendAmount)],
+        userAddr
+      );
+      await waitingTransaction(hash);
 
-    console.log("finish");
-    setSendAmount(0);
-    setRecipient("");
-    setSendLoading(false);
+      console.log("finish");
+      setSendAmount(0);
+      setRecipient("");
+      setSendLoading(false);
+    } catch (error) {
+      console.error(error);
+      setSendAmount(0);
+      setRecipient("");
+      setSendLoading(false);
+    }
   };
 
   const handleApproveSubmit = async (event) => {
@@ -99,17 +107,24 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
       "Recipient:",
       approveRecipient
     );
-    const hash = await getWriteFunction(
-      "approve",
-      [approveRecipient, parseEther(approveAmount)],
-      userAddr
-    );
-    await waitingTransaction(hash);
+    try {
+      const hash = await getWriteFunction(
+        "approve",
+        [approveRecipient, parseEther(approveAmount)],
+        userAddr
+      );
+      await waitingTransaction(hash);
 
-    console.log("finish");
-    setApproveAmount(0);
-    setApproveRecipient("");
-    setApproveLoading(false);
+      console.log("finish");
+      setApproveAmount(0);
+      setApproveRecipient("");
+      setApproveLoading(false);
+    } catch (error) {
+      console.error(error);
+      setApproveAmount(0);
+      setApproveRecipient("");
+      setApproveLoading(false);
+    }
   };
   const handleTransferFromSubmit = async (event) => {
     event.preventDefault();
@@ -124,30 +139,47 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
       "Recipient:",
       transferFromRecipient
     );
-    const hash = await getWriteFunction(
-      "transferFrom",
-      [transferFromFrom, transferFromRecipient, parseEther(transferFromAmount)],
-      userAddr
-    );
-    await waitingTransaction(hash);
+    try {
+      const hash = await getWriteFunction(
+        "transferFrom",
+        [
+          transferFromFrom,
+          transferFromRecipient,
+          parseEther(transferFromAmount),
+        ],
+        userAddr
+      );
+      await waitingTransaction(hash);
 
-    console.log("finish");
-    setTransferFromAmount(0);
-    setTransferFromRecipient("");
-    setTransferFromLoading(false);
+      console.log("finish");
+      setTransferFromAmount(0);
+      setTransferFromRecipient("");
+      setTransferFromLoading(false);
+    } catch (error) {
+      console.error(error);
+      setTransferFromAmount(0);
+      setTransferFromRecipient("");
+      setTransferFromLoading(false);
+    }
   };
   const handleAllowanceSubmit = async (event) => {
     event.preventDefault();
     setAllowanceLoading(true);
-    console.log("Owner:", allowanceOwner, "Spendert:", allowanceSpender);
-    const numberAllowance = await getReadFunction("allowance", [
-      allowanceOwner,
-      allowanceSpender,
-    ]);
-    console.log("finish", numberAllowance);
-    setAllowanceAmount(formatEther(numberAllowance.toString()));
-    setAllowanceSpender("");
-    setAllowanceLoading(false);
+    console.log("Owner:", allowanceOwner, "Spender:", allowanceSpender);
+    try {
+      const numberAllowance = await getReadFunction("allowance", [
+        allowanceOwner,
+        allowanceSpender,
+      ]);
+      console.log("finish", numberAllowance);
+      setAllowanceAmount(parseNumberToEth(numberAllowance));
+      setAllowanceSpender("");
+      setAllowanceLoading(false);
+    } catch (error) {
+      console.error(error);
+      setAllowanceSpender("");
+      setAllowanceLoading(false);
+    }
   };
 
   return (
@@ -157,7 +189,7 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
         <h2>Contract: {process.env.CONTRACT}</h2>
         <h2>Owner: {owner}</h2>
         <h2>Total Supply: {totalSupply} BUSD</h2>
-        <h2>Balance: {balanceBusd} BUSD</h2>{" "}
+        <h2>Balances: {parseNumberToEth(balanceBusd)} BUSD</h2>{" "}
       </div>
       <div className="usdc-container">
         <div className="transaction-section">

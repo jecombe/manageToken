@@ -1,6 +1,6 @@
 import { ConnectWalletClient, ConnectPublicClient } from "./client";
 import abi from "./abi";
-import { createWalletClient, custom, getContract } from "viem";
+import { createWalletClient, custom, formatEther, getContract } from "viem";
 import { polygonMumbai } from "viem/chains";
 
 export const getWriteFunction = async (functionName, args, account) => {
@@ -54,4 +54,8 @@ export const sendTransaction = (value, to, account) => {
     account,
     value,
   });
+};
+
+export const parseNumberToEth = (number) => {
+  return Number(formatEther(number.toString())).toFixed(2);
 };

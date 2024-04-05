@@ -1,9 +1,13 @@
 "use client";
 import React, { useState } from "react";
-import { formatEther, parseEther } from "viem";
+import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./matic.css";
-import { sendTransaction, waitingTransaction } from "@/utils/utils";
+import {
+  parseNumberToEth,
+  sendTransaction,
+  waitingTransaction,
+} from "@/utils/utils";
 
 export default function Matic({ address, balance }) {
   const [sendLoading, setSendLoading] = useState(false);
@@ -36,7 +40,7 @@ export default function Matic({ address, balance }) {
       <>
         <div className="matic-info-container">
           <h1>MATIC</h1>
-          <h2>Balance: {formatEther(balance.toString())} MATIC</h2>
+          <h2>Balance: {parseNumberToEth(balance)} MATIC</h2>
         </div>
         <div className="matic-container">
           <div className="matic-details">
