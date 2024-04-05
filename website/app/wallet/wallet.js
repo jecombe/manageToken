@@ -1,16 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ConnectWalletClient, ConnectPublicClient } from "./client";
-import { createWalletClient, custom, formatEther, getContract, parseEther } from "viem";
+import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
+import { createWalletClient, custom, formatEther, getContract } from "viem";
 import { PropagateLoader } from "react-spinners";
 
-import abi from "./abi";
-import Status from "./status";
-import StatusContract from "./statusContract";
+import abi from "../../utils/abi";
 import { polygonMumbai } from "viem/chains";
+import Matic from "../matic/matic";
+import Usdc from "../usdc/usdc";
+import Owner from "../owner/owner";
 
-export default function WalletButton() {
+export default function Wallet() {
   const [address, setAddress] = useState(null);
+  const [newOwnerAddress, setNewOwnerAddress] = useState(""); // État pour stocker l'adresse du nouveau propriétaire
+
   const [balance, setBalance] = useState(null);
   const [balanceBusd, setBalanceBusd] = useState(null);
 
@@ -25,6 +28,44 @@ export default function WalletButton() {
   const [owner, setOwner] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
 
+  const getWriteFunction = async (functionName, args, addressFrom) => {
+    return ConnectWalletClient().writeContract({
+      abi,
+      account: addressFrom,
+      functionName,
+      address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
+      args,
+    });
+  };
+
+  const getInfos = async (address) => {
+    try {
+      const balance = await ConnectPublicClient().getBalance({ address });
+
+      setAddress(address);
+      setBalance(balance);
+      setIsConnect(true);
+
+      const contract = getContract({
+        address: contractBusd,
+        abi,
+        publicClient: ConnectPublicClient(),
+        walletClient: ConnectWalletClient(),
+      });
+
+      const totalSupply = await getCallFunction("totalSupply");
+      const ownerAddr = await getCallFunction("getOwner");
+      const balanceOf = await getCallFunction("balanceOf", [address]);
+
+      setTotalSupply(formatEther(totalSupply));
+      setOwner(ownerAddr);
+      setContract(contract);
+      setBalanceBusd(formatEther(balanceOf));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     checkNetwork();
   }, []);
@@ -33,6 +74,7 @@ export default function WalletButton() {
     const intervalId = setInterval(async () => {
       try {
         if (isConnect) {
+          console.log("UPDATE BALANCE");
           const balance = await ConnectPublicClient().getBalance({ address });
           const balanceOf = await getCallFunction("balanceOf", [address]);
           setBalance(balance);
@@ -57,31 +99,7 @@ export default function WalletButton() {
       } else {
         try {
           setIsLoading(true);
-          const address = accounts[0];
-          const balance = await ConnectPublicClient().getBalance({ address });
-
-          setAddress(address);
-          setBalance(balance);
-          setIsConnect(true);
-
-          const contract = getContract({
-            address: contractBusd,
-            abi,
-            publicClient: ConnectPublicClient(),
-            walletClient: ConnectWalletClient(),
-          });
-
-          const totalSupply = await getCallFunction("totalSupply");
-          const ownerAddr = await getCallFunction("getOwner");
-          const balanceOf = await getCallFunction("balanceOf", [address]);
-
-          setTotalSupply(formatEther(totalSupply));
-          setOwner(ownerAddr);
-          setContract(contract);
-          setBalanceBusd(formatEther(balanceOf));
-
-          // Check network when account changes
-          ///await checkNetwork();
+          await getInfos(accounts[0]);
         } catch (error) {
           setIsConnect(false);
           console.error(error);
@@ -100,7 +118,7 @@ export default function WalletButton() {
 
   useEffect(() => {
     // Check network when component mounts
-  //  checkNetwork();
+    //  checkNetwork();
 
     // Listen for network changes
     window.ethereum.on("networkChanged", handleNetworkChanged);
@@ -136,7 +154,6 @@ export default function WalletButton() {
     }
   };
 
-
   const checkNetwork = async () => {
     if (window.ethereum) {
       try {
@@ -151,11 +168,9 @@ export default function WalletButton() {
 
           if (userResponse) {
             await connectToMumbai();
-            
           }
         }
-        setCurrentNetwork(networkId)
-
+        setCurrentNetwork(networkId);
       } catch (error) {
         console.error("Error checking network:", error);
         return error;
@@ -211,35 +226,10 @@ export default function WalletButton() {
         setIsLoading(true);
         const client = createWalletClient({
           chain: polygonMumbai,
-          transport: custom(window.ethereum)
-        })
-
-        const [address] = await client.requestAddresses()
-        
-        const balance = await ConnectPublicClient().getBalance({ address });
-
-        setAddress(address);
-        setBalance(balance);
-        setIsConnect(true);
-
-        const contract = getContract({
-          address: contractBusd,
-          abi,
-          publicClient: ConnectPublicClient(),
-          walletClient: ConnectWalletClient(),
+          transport: custom(window.ethereum),
         });
-
-       const totalSupply = await getCallFunction("totalSupply");
-        const ownerAddr = await getCallFunction("getOwner");
-        const balanceOf = await getCallFunction("balanceOf", [address]);
-
-        setTotalSupply(formatEther(totalSupply));
-        setOwner(ownerAddr);
-        setContract(contract);
-        setBalanceBusd(formatEther(balanceOf));
-
-        // Check network when connecting wallet
-      //  await checkNetwork();
+        const [address] = await client.requestAddresses();
+        await getInfos(address);
       } catch (error) {
         setIsConnect(false);
         console.error(error);
@@ -248,6 +238,42 @@ export default function WalletButton() {
       }
     }
   }
+
+  const renounceOwnership = async () => {
+    try {
+      const hash = await getWriteFunction("renounceOwnership", [], address);
+      await ConnectPublicClient().waitForTransactionReceipt({
+        hash,
+      });
+
+      console.log("Ownership renounced successfully");
+    } catch (error) {
+      console.error("Error while renouncing ownership:", error);
+    }
+  };
+
+  // Fonction pour transférer la propriété
+  const transferOwnership = async () => {
+    try {
+      const hash = await getWriteFunction(
+        "transferOwnership",
+        [newOwnerAddress],
+        address
+      );
+      await ConnectPublicClient().waitForTransactionReceipt({
+        hash,
+      });
+
+      console.log("Ownership transferred successfully");
+    } catch (error) {
+      console.error("Error while transferring ownership:", error);
+    }
+  };
+
+  // Gestionnaire pour mettre à jour l'adresse du nouveau propriétaire
+  const handleNewOwnerAddressChange = (event) => {
+    setNewOwnerAddress(event.target.value);
+  };
 
   return (
     <div
@@ -273,23 +299,21 @@ export default function WalletButton() {
         )}
       </button>
       <h2>{address}</h2>
-          {console.log(currentNetwork)}
+      {console.log(currentNetwork)}
       {currentNetwork && currentNetwork !== "YOUR_NETWORK_ID" ? (
         <button onClick={addNetwork}>Add Network</button>
       ) : null}
 
-
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
-      {isConnect ? (
+      {isConnect && !isLoading ? (
         <>
-          <Status address={address} balance={Math.round(Number(balance))} />
+          <Owner owner={owner} address={address} />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
-          <span style={{ color: owner === address ? "green" : "red" }}>
-            {owner === address ? "you are the owner" : "you are not the owner"}
-          </span>
-          <StatusContract
+          <Matic address={address} balance={Math.round(Number(balance))} />
+          <hr style={{ width: "100%", borderTop: "3px solid black" }} />
+          <Usdc
             contract={contract}
             totalSupply={Math.round(totalSupply)}
             owner={owner}

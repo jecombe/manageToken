@@ -1,10 +1,9 @@
-"use client";
-import { useState } from "react";
-import { ConnectWalletClient, ConnectPublicClient } from "./client";
+import React, { useState } from "react";
+import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
 import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
-
-import abi from "./abi";
+import abi from "../../utils/abi";
+import "./usdc.css"; // Import du fichier de style CSS
 
 const getWriteFunction = async (functionName, args, addressFrom) => {
   return ConnectWalletClient().writeContract({
@@ -16,7 +15,7 @@ const getWriteFunction = async (functionName, args, addressFrom) => {
   });
 };
 
-export default function StatusContract({
+export default function Usdc({
   contract,
   totalSupply,
   owner,
@@ -99,64 +98,72 @@ export default function StatusContract({
   };
 
   return (
-    <div>
-      <h1>BUSD</h1>
-      <h2>Owner contract: {owner}</h2>
-      <h2>Total Supply: {totalSupply} BUSD</h2>
-      <h2>Your balance: {balanceBusd} BUSD</h2>
-
+    <>
       <div>
-        <h2>Transactions</h2>
+        <h1>BUSD</h1>
+        <h2>Contract: 0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35</h2>
+        <h2>Owner: {owner}</h2>
+        <h2>Total Supply: {totalSupply} BUSD</h2>
+        <h2>Balance: {balanceBusd} BUSD</h2>{" "}
       </div>
+      <div className="usdc-container">
+        <div className="transaction-section">
+          <div className="mint-section">
+            <h2>Mint</h2>
+            {mintLoading ? (
+              <CircleLoader color={"#000000"} loading={mintLoading} />
+            ) : (
+              <form onSubmit={handleMintSubmit}>
+                <input
+                  type="number"
+                  value={mintAmount}
+                  onChange={(event) => setMintAmount(event.target.value)}
+                />
+                <button type="submit">Mint</button>
+              </form>
+            )}
+          </div>
 
-      <div>
-        <h2>Mint</h2>
-        {mintLoading ? (
-          <CircleLoader color={"#000000"} loading={mintLoading} />
-        ) : (
-          <form onSubmit={handleMintSubmit}>
-            <input
-              type="number"
-              value={mintAmount}
-              onChange={(event) => setMintAmount(event.target.value)}
-            />
-            <button type="submit">Mint</button>
-          </form>
-        )}
-        <h2>Burn</h2>
-        {burnLoading ? (
-          <CircleLoader color={"#000000"} loading={burnLoading} />
-        ) : (
-          <form onSubmit={handleBurnSubmit}>
-            <input
-              type="number"
-              value={burnAmount}
-              onChange={(event) => setBurnAmount(event.target.value)}
-            />
-            <button type="submit">Burn</button>
-          </form>
-        )}
-        <h2>Send BUSD</h2>
-        {sendLoading ? (
-          <CircleLoader color={"#000000"} loading={sendLoading} />
-        ) : (
-          <form onSubmit={handleSendSubmit}>
-            <input
-              type="text"
-              placeholder="Recipient Address"
-              value={recipient}
-              onChange={(event) => setRecipient(event.target.value)}
-            />
-            <input
-              type="number"
-              placeholder="Amount"
-              value={sendAmount}
-              onChange={(event) => setSendAmount(event.target.value)}
-            />
-            <button type="submit">Send</button>
-          </form>
-        )}
+          <div className="burn-section">
+            <h2>Burn</h2>
+            {burnLoading ? (
+              <CircleLoader color={"#000000"} loading={burnLoading} />
+            ) : (
+              <form onSubmit={handleBurnSubmit}>
+                <input
+                  type="number"
+                  value={burnAmount}
+                  onChange={(event) => setBurnAmount(event.target.value)}
+                />
+                <button type="submit">Burn</button>
+              </form>
+            )}
+          </div>
+
+          <div className="send-section">
+            <h2>Send</h2>
+            {sendLoading ? (
+              <CircleLoader color={"#000000"} loading={sendLoading} />
+            ) : (
+              <form onSubmit={handleSendSubmit}>
+                <input
+                  type="text"
+                  placeholder="Recipient Address"
+                  value={recipient}
+                  onChange={(event) => setRecipient(event.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={sendAmount}
+                  onChange={(event) => setSendAmount(event.target.value)}
+                />
+                <button type="submit">Send</button>
+              </form>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
