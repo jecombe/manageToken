@@ -34,7 +34,7 @@ export default function Matic({ address, balance }) {
   if (address) {
     return (
       <>
-        <div>
+        <div className="matic-info-container">
           <h1>MATIC</h1>
           <h2>Balance: {formatEther(balance.toString())} MATIC</h2>
         </div>
@@ -58,6 +58,7 @@ export default function Matic({ address, balance }) {
               <input
                 className="amount-input"
                 type="number"
+                min="0"
                 placeholder="Amount"
                 value={sendAmount}
                 onChange={(event) => setSendAmount(event.target.value)}

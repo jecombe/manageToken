@@ -44,3 +44,32 @@
   justify-content: center;
   margin-top: 20px;
 }
+.matic-info-container {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.matic-info-container h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.matic-info-container h2 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.matic-info-container h2:last-child {
+  margin-bottom: 20px;
+}
+
+.matic-info-container span {
+  font-size: 16px;
+}
+
+.matic-info-container span:last-child {
+  margin-bottom: 10px;
+}

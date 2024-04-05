@@ -5,6 +5,35 @@
   margin: 20px;
   max-width: 400px;
 }
+.usdc-info-container {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.usdc-info-container h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.usdc-info-container h2 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.usdc-info-container h2:last-child {
+  margin-bottom: 20px;
+}
+
+.usdc-info-container span {
+  font-size: 16px;
+}
+
+.usdc-info-container span:last-child {
+  margin-bottom: 10px;
+}
 
 .usdc-container h1 {
   margin: 0;
