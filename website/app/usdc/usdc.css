@@ -58,3 +58,7 @@ form button {
   justify-content: center;
   margin-top: 20px;
 }
+
+.allowance-button {
+  background-color: #28a745; /* Choisissez la couleur de votre choix */
+}

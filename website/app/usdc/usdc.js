@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { parseEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./usdc.css";
-import { getWriteFunction, waitingTransaction } from "@/utils/utils";
+import {
+  getReadFunction,
+  getWriteFunction,
+  waitingTransaction,
+} from "@/utils/utils";
 
 export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
   const [mintAmount, setMintAmount] = useState(0);
@@ -13,8 +17,11 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
   const [approveRecipient, setApproveRecipient] = useState("");
   const [transferFromAmount, setTransferFromAmount] = useState(0);
   const [transferFromRecipient, setTransferFromRecipient] = useState("");
+  const [transferFromFrom, setTransferFromFrom] = useState("");
   const [allowanceAmount, setAllowanceAmount] = useState(0);
-  const [allowanceRecipient, setAllowanceRecipient] = useState("");
+  const [allowanceSpender, setAllowanceSpender] = useState("");
+  const [allowanceOwner, setAllowanceOwner] = useState("");
+
   const [mintLoading, setMintLoading] = useState(false);
   const [burnLoading, setBurnLoading] = useState(false);
   const [sendLoading, setSendLoading] = useState(false);
@@ -104,19 +111,22 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
     setApproveRecipient("");
     setApproveLoading(false);
   };
-
   const handleTransferFromSubmit = async (event) => {
     event.preventDefault();
     setTransferFromLoading(true);
     console.log(
       "TransferFrom amount:",
       transferFromAmount,
+      "From:",
+      userAddr,
+      "sender",
+      transferFromFrom,
       "Recipient:",
       transferFromRecipient
     );
     const hash = await getWriteFunction(
       "transferFrom",
-      [userAddr, transferFromRecipient, parseEther(transferFromAmount)],
+      [transferFromFrom, transferFromRecipient, parseEther(transferFromAmount)],
       userAddr
     );
     await waitingTransaction(hash);
@@ -126,26 +136,17 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
     setTransferFromRecipient("");
     setTransferFromLoading(false);
   };
-
   const handleAllowanceSubmit = async (event) => {
     event.preventDefault();
     setAllowanceLoading(true);
-    console.log(
-      "Allowance amount:",
-      allowanceAmount,
-      "Recipient:",
-      allowanceRecipient
-    );
-    const hash = await getWriteFunction(
-      "allowance",
-      [userAddr, allowanceRecipient, parseEther(allowanceAmount)],
-      userAddr
-    );
-    await waitingTransaction(hash);
-
-    console.log("finish");
-    setAllowanceAmount(0);
-    setAllowanceRecipient("");
+    console.log("Owner:", allowanceOwner, "Spendert:", allowanceSpender);
+    const numberAllowance = await getReadFunction("allowance", [
+      allowanceOwner,
+      allowanceSpender,
+    ]);
+    console.log("finish", numberAllowance);
+    setAllowanceAmount(formatEther(numberAllowance.toString()));
+    setAllowanceSpender("");
     setAllowanceLoading(false);
   };
 
@@ -252,12 +253,20 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
                 />
                 <input
                   type="text"
+                  placeholder="Sender Address"
+                  value={transferFromFrom}
+                  onChange={(event) => setTransferFromFrom(event.target.value)}
+                />
+
+                <input
+                  type="text"
                   placeholder="Recipient Address"
                   value={transferFromRecipient}
                   onChange={(event) =>
                     setTransferFromRecipient(event.target.value)
                   }
                 />
+
                 <button type="submit">Transfer From</button>
               </form>
             )}
@@ -265,24 +274,26 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
 
           <div className="allowance-section">
             <h2>Allowance</h2>
+            <span>Amount: {allowanceAmount}</span>
             {allowanceLoading ? (
               <CircleLoader color={"#000000"} loading={allowanceLoading} />
             ) : (
               <form onSubmit={handleAllowanceSubmit}>
                 <input
-                  type="number"
-                  value={allowanceAmount}
-                  onChange={(event) => setAllowanceAmount(event.target.value)}
+                  type="text"
+                  placeholder="Owner Address"
+                  value={allowanceOwner}
+                  onChange={(event) => setAllowanceOwner(event.target.value)}
                 />
                 <input
                   type="text"
-                  placeholder="Recipient Address"
-                  value={allowanceRecipient}
-                  onChange={(event) =>
-                    setAllowanceRecipient(event.target.value)
-                  }
+                  placeholder="Spender Address"
+                  value={allowanceSpender}
+                  onChange={(event) => setAllowanceSpender(event.target.value)}
                 />
-                <button type="submit">Allowance</button>
+                <button type="submit" className="allowance-button">
+                  Allowance
+                </button>
               </form>
             )}
           </div>

@@ -216,13 +216,18 @@ export default function Wallet() {
       <h2>{address}</h2>
       {console.log(currentNetwork)}
       <button onClick={addNetwork}>Zama devnet</button>
-      <button onClick={updateBalance} disabled={isLoading}>
-        {isLoading ? (
-          <PropagateLoader color={"#ffffff"} loading={isLoading} />
-        ) : (
-          "Refresh Balances"
-        )}
-      </button>
+      {isConnect ? (
+        <button onClick={updateBalance} disabled={isLoading}>
+          {isLoading ? (
+            <PropagateLoader color={"#ffffff"} loading={isLoading} />
+          ) : (
+            "Refresh Balances"
+          )}
+        </button>
+      ) : (
+        ""
+      )}
+
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
       {isConnect && !isLoading ? (
