@@ -3,10 +3,10 @@ import abi from "./abi";
 import { createWalletClient, custom, getContract } from "viem";
 import { polygonMumbai } from "viem/chains";
 
-export const getWriteFunction = async (functionName, args, addressFrom) => {
+export const getWriteFunction = async (functionName, args, account) => {
   return ConnectWalletClient().writeContract({
     abi,
-    account: addressFrom,
+    account,
     functionName,
     address: process.env.CONTRACT,
     args,
@@ -45,5 +45,13 @@ export const getBalanceUser = (address) => {
 export const waitingTransaction = (hash) => {
   return ConnectPublicClient().waitForTransactionReceipt({
     hash,
+  });
+};
+
+export const sendTransaction = (value, to, account) => {
+  return ConnectWalletClient().sendTransaction({
+    to,
+    account,
+    value,
   });
 };

@@ -4,6 +4,7 @@ import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
 import { formatEther, parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./matic.css";
+import { sendTransaction, waitingTransaction } from "@/utils/utils";
 
 export default function Matic({ address, balance }) {
   const [sendLoading, setSendLoading] = useState(false);
@@ -14,12 +15,12 @@ export default function Matic({ address, balance }) {
     event.preventDefault();
     setSendLoading(true);
     try {
-      const hash = await ConnectWalletClient().sendTransaction({
-        to: recipient,
-        account: address,
-        value: parseEther(sendAmount),
-      });
-      await ConnectPublicClient().waitForTransactionReceipt({ hash });
+      const hash = await sendTransaction(
+        parseEther(sendAmount),
+        recipient,
+        address
+      );
+      await waitingTransaction(hash);
       setSendAmount(0);
       setRecipient("");
       setSendLoading(false);

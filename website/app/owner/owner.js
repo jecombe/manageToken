@@ -1,27 +1,14 @@
 import React, { useState } from "react";
-import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
-import abi from "../../utils/abi";
 import "./owner.css";
+import { getWriteFunction, waitingTransaction } from "@/utils/utils";
 
 export default function Owner({ owner, address }) {
   const [newOwnerAddress, setNewOwnerAddress] = useState("");
 
-  const getWriteFunction = async (functionName, args, addressFrom) => {
-    return ConnectWalletClient().writeContract({
-      abi,
-      account: addressFrom,
-      functionName,
-      address: process.env.CONTRACT,
-      args,
-    });
-  };
-
   const renounceOwnership = async () => {
     try {
       const hash = await getWriteFunction("renounceOwnership", [], address);
-      await ConnectPublicClient().waitForTransactionReceipt({
-        hash,
-      });
+      await waitingTransaction(hash);
 
       console.log("Ownership renounced successfully");
     } catch (error) {
@@ -36,9 +23,7 @@ export default function Owner({ owner, address }) {
         [newOwnerAddress],
         address
       );
-      await ConnectPublicClient().waitForTransactionReceipt({
-        hash,
-      });
+      await waitingTransaction(hash);
 
       console.log("Ownership transferred successfully");
     } catch (error) {
