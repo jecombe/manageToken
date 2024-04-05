@@ -217,11 +217,7 @@ export default function Wallet() {
           onClick={updateBalance}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <CircleLoader color={"#ffffff"} loading={isLoading} />
-          ) : (
-            "Refresh Balances"
-          )}
+          Refresh Balances
         </button>
       ) : (
         ""
