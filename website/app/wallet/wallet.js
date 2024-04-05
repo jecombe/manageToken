@@ -215,9 +215,7 @@ export default function Wallet() {
       </button>
       <h2>{address}</h2>
       {console.log(currentNetwork)}
-      {currentNetwork && currentNetwork !== "YOUR_NETWORK_ID" ? (
-        <button onClick={addNetwork}>Zama devnet</button>
-      ) : null}
+      <button onClick={addNetwork}>Zama devnet</button>
       <button onClick={updateBalance} disabled={isLoading}>
         {isLoading ? (
           <PropagateLoader color={"#ffffff"} loading={isLoading} />
