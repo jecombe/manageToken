@@ -26,9 +26,18 @@ export default function Usdc({
   const [burnAmount, setBurnAmount] = useState(0);
   const [sendAmount, setSendAmount] = useState(0);
   const [recipient, setRecipient] = useState("");
+  const [approveAmount, setApproveAmount] = useState(0);
+  const [approveRecipient, setApproveRecipient] = useState("");
+  const [transferFromAmount, setTransferFromAmount] = useState(0);
+  const [transferFromRecipient, setTransferFromRecipient] = useState("");
+  const [allowanceAmount, setAllowanceAmount] = useState(0); // Nouvel état pour le montant d'allocation
+  const [allowanceRecipient, setAllowanceRecipient] = useState(""); // Nouvel état pour le destinataire de l'allocation
   const [mintLoading, setMintLoading] = useState(false);
   const [burnLoading, setBurnLoading] = useState(false);
   const [sendLoading, setSendLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [transferFromLoading, setTransferFromLoading] = useState(false);
+  const [allowanceLoading, setAllowanceLoading] = useState(false); // Nouvel état pour le chargement de l'allocation
 
   const handleMintSubmit = async (event) => {
     event.preventDefault();
@@ -97,6 +106,78 @@ export default function Usdc({
     setSendLoading(false);
   };
 
+  const handleApproveSubmit = async (event) => {
+    event.preventDefault();
+    setApproveLoading(true);
+    console.log(
+      "Approve amount:",
+      approveAmount,
+      "Recipient:",
+      approveRecipient
+    );
+    const hash = await getWriteFunction(
+      "approve",
+      [approveRecipient, parseEther(approveAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
+    setApproveAmount(0);
+    setApproveRecipient("");
+    setApproveLoading(false);
+  };
+
+  const handleTransferFromSubmit = async (event) => {
+    event.preventDefault();
+    setTransferFromLoading(true);
+    console.log(
+      "TransferFrom amount:",
+      transferFromAmount,
+      "Recipient:",
+      transferFromRecipient
+    );
+    const hash = await getWriteFunction(
+      "transferFrom",
+      [userAddr, transferFromRecipient, parseEther(transferFromAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
+    setTransferFromAmount(0);
+    setTransferFromRecipient("");
+    setTransferFromLoading(false);
+  };
+
+  const handleAllowanceSubmit = async (event) => {
+    event.preventDefault();
+    setAllowanceLoading(true);
+    console.log(
+      "Allowance amount:",
+      allowanceAmount,
+      "Recipient:",
+      allowanceRecipient
+    );
+    const hash = await getWriteFunction(
+      "allowance",
+      [userAddr, allowanceRecipient, parseEther(allowanceAmount)],
+      userAddr
+    );
+    await ConnectPublicClient().waitForTransactionReceipt({
+      hash,
+    });
+
+    console.log("finish");
+    setAllowanceAmount(0);
+    setAllowanceRecipient("");
+    setAllowanceLoading(false);
+  };
+
   return (
     <>
       <div>
@@ -159,6 +240,78 @@ export default function Usdc({
                   onChange={(event) => setSendAmount(event.target.value)}
                 />
                 <button type="submit">Send</button>
+              </form>
+            )}
+          </div>
+
+          <div className="approve-section">
+            <h2>Approve</h2>
+            {approveLoading ? (
+              <CircleLoader color={"#000000"} loading={approveLoading} />
+            ) : (
+              <form onSubmit={handleApproveSubmit}>
+                <input
+                  type="number"
+                  value={approveAmount}
+                  onChange={(event) => setApproveAmount(event.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Recipient Address"
+                  value={approveRecipient}
+                  onChange={(event) => setApproveRecipient(event.target.value)}
+                />
+                <button type="submit">Approve</button>
+              </form>
+            )}
+          </div>
+
+          <div className="transfer-from-section">
+            <h2>Transfer From</h2>
+            {transferFromLoading ? (
+              <CircleLoader color={"#000000"} loading={transferFromLoading} />
+            ) : (
+              <form onSubmit={handleTransferFromSubmit}>
+                <input
+                  type="number"
+                  value={transferFromAmount}
+                  onChange={(event) =>
+                    setTransferFromAmount(event.target.value)
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Recipient Address"
+                  value={transferFromRecipient}
+                  onChange={(event) =>
+                    setTransferFromRecipient(event.target.value)
+                  }
+                />
+                <button type="submit">Transfer From</button>
+              </form>
+            )}
+          </div>
+
+          <div className="allowance-section">
+            <h2>Allowance</h2>
+            {allowanceLoading ? (
+              <CircleLoader color={"#000000"} loading={allowanceLoading} />
+            ) : (
+              <form onSubmit={handleAllowanceSubmit}>
+                <input
+                  type="number"
+                  value={allowanceAmount}
+                  onChange={(event) => setAllowanceAmount(event.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Recipient Address"
+                  value={allowanceRecipient}
+                  onChange={(event) =>
+                    setAllowanceRecipient(event.target.value)
+                  }
+                />
+                <button type="submit">Allowance</button>
               </form>
             )}
           </div>

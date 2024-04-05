@@ -1,18 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ConnectWalletClient, ConnectPublicClient } from "../../utils/client";
-import { createWalletClient, custom, formatEther, getContract } from "viem";
+import { formatEther } from "viem";
 import { PropagateLoader } from "react-spinners";
 
-import abi from "../../utils/abi";
-import { polygonMumbai } from "viem/chains";
 import Matic from "../matic/matic";
 import Usdc from "../usdc/usdc";
 import Owner from "../owner/owner";
+import {
+  createWallet,
+  getBalanceUser,
+  getContractInfo,
+  getReadFunction,
+} from "@/utils/utils";
+import { networks } from "@/utils/networks";
 
 export default function Wallet() {
   const [address, setAddress] = useState(null);
-  const [newOwnerAddress, setNewOwnerAddress] = useState(""); // État pour stocker l'adresse du nouveau propriétaire
 
   const [balance, setBalance] = useState(null);
   const [balanceBusd, setBalanceBusd] = useState(null);
@@ -20,42 +23,24 @@ export default function Wallet() {
   const [isConnect, setIsConnect] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [contractBusd, setContractBusd] = useState(
-    "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
-  );
   const [totalSupply, setTotalSupply] = useState(null);
   const [contract, setContract] = useState(null);
   const [owner, setOwner] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
 
-  const getWriteFunction = async (functionName, args, addressFrom) => {
-    return ConnectWalletClient().writeContract({
-      abi,
-      account: addressFrom,
-      functionName,
-      address: process.env.CONTRACT,
-      args,
-    });
-  };
-
   const getInfos = async (address) => {
     try {
-      const balance = await ConnectPublicClient().getBalance({ address });
+      const balance = await getBalanceUser(address);
 
       setAddress(address);
       setBalance(balance);
       setIsConnect(true);
 
-      const contract = getContract({
-        address: process.env.CONTRACT,
-        abi,
-        publicClient: ConnectPublicClient(),
-        walletClient: ConnectWalletClient(),
-      });
+      const contract = getContractInfo();
 
-      const totalSupply = await getCallFunction("totalSupply");
-      const ownerAddr = await getCallFunction("getOwner");
-      const balanceOf = await getCallFunction("balanceOf", [address]);
+      const totalSupply = await getReadFunction("totalSupply");
+      const ownerAddr = await getReadFunction("getOwner");
+      const balanceOf = await getReadFunction("balanceOf", [address]);
 
       setTotalSupply(formatEther(totalSupply));
       setOwner(ownerAddr);
@@ -75,8 +60,8 @@ export default function Wallet() {
       try {
         if (isConnect) {
           console.log("UPDATE BALANCE");
-          const balance = await ConnectPublicClient().getBalance({ address });
-          const balanceOf = await getCallFunction("balanceOf", [address]);
+          const balance = await getBalanceUser(address);
+          const balanceOf = await getReadFunction("balanceOf", [address]);
           setBalance(balance);
           setBalanceBusd(formatEther(balanceOf));
         }
@@ -114,7 +99,7 @@ export default function Wallet() {
     return () => {
       window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
     };
-  }, [contractBusd]);
+  }, []);
 
   useEffect(() => {
     // Check network when component mounts
@@ -132,19 +117,7 @@ export default function Wallet() {
     try {
       await window.ethereum.request({
         method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: "0x13881",
-            chainName: "Mumbai",
-            nativeCurrency: {
-              name: "MATIC",
-              symbol: "MATIC",
-              decimals: 18,
-            },
-            rpcUrls: ["https://rpc.ankr.com/polygon_mumbai"],
-            blockExplorerUrls: ["https://mumbai.polygonscan.com"],
-          },
-        ],
+        params: [networks.mumbai],
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -161,7 +134,7 @@ export default function Wallet() {
           method: "eth_chainId",
         });
 
-        if (networkId !== "0x13881") {
+        if (networkId !== networks.mumbai.chainId) {
           const userResponse = window.confirm(
             "Please switch to Mumbai testnet network to use this application. Do you want to switch now?"
           );
@@ -187,32 +160,11 @@ export default function Wallet() {
     try {
       await window.ethereum.request({
         method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: "0x1f49",
-            chainName: "Zama Network",
-            nativeCurrency: {
-              name: "ZAMA",
-              symbol: "ZAMA",
-              decimals: 18,
-            },
-            rpcUrls: ["https://devnet.zama.ai"],
-            blockExplorerUrls: ["https://main.explorer.zama.ai"],
-          },
-        ],
+        params: [networks.zama],
       });
     } catch (error) {
       console.error("Error adding network:", error);
     }
-  };
-
-  const getCallFunction = async (functionName, args) => {
-    return ConnectPublicClient().readContract({
-      address: contractBusd,
-      abi,
-      functionName,
-      args,
-    });
   };
 
   async function handleClick() {
@@ -225,10 +177,7 @@ export default function Wallet() {
     } else {
       try {
         setIsLoading(true);
-        const client = createWalletClient({
-          chain: polygonMumbai,
-          transport: custom(window.ethereum),
-        });
+        const client = createWallet();
         const [address] = await client.requestAddresses();
         await getInfos(address);
       } catch (error) {
