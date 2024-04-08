@@ -35,13 +35,10 @@ export default function Wallet() {
       const ownerAddr = await getReadFunction("getOwner");
       const balanceOf = await getReadFunction("balanceOf", [address]);
 
-      console.log(formatEther(totalSupply))
-      setTotalSupply(formatEther(totalSupply.toString()));
-    /*  setOwner(ownerAddr);
-      setBalanceBusd(balanceOf);*/
-      //setTotalSupply(0);
-      setOwner("fgfgf");
-      setBalanceBusd(0);
+      setTotalSupply(formatEther(totalSupply));
+     setOwner(ownerAddr);
+      setBalanceBusd(balanceOf);
+   
     } catch (error) {
       console.error(error);
     }
