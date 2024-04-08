@@ -75,7 +75,12 @@ export const getActualBlock = () => {
 export const isAddressEq = (addressOne, addressTwo) => {
   return isAddressEqual(addressOne, addressTwo);
 };
-
+/*
+const rep = {
+  transfer: [{ number: { from: "eeeeee", to: "rrrrrr" } }],
+  approval: [{}],
+  allowance: [{ sender: number }],
+};*/
 export const getLogsUser = async (userAddress, contractAddress) => {
   try {
     const blockNumber = BigInt(await getActualBlock());
@@ -115,6 +120,7 @@ export const getLogsUser = async (userAddress, contractAddress) => {
     }
 
     console.log("all logs are saved :", logs);
+    return logs;
   } catch (error) {
     console.log(error);
   }

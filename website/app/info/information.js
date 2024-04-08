@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./information.css";
 import {
   getLogsUser,
+  //  getAllowance,
   getWriteFunction,
   waitingTransaction,
 } from "@/utils/utils";
@@ -15,6 +16,15 @@ export default function Information({ userAddress, isConnect }) {
     const logs = await getLogsUser(
       "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
     );
+    setLogs(logs);
+    console.log(logs);
+  };
+
+  const getAllowances = async () => {
+    // const logs = await getAllowance(
+    //   "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
+    // );
+    // setLogs(logs);
     console.log(logs);
   };
 
@@ -34,15 +44,17 @@ export default function Information({ userAddress, isConnect }) {
         <table>
           <thead>
             <tr>
-              <th>Action</th>
-              <th>Date</th>
+              <th>Event</th>
+              <th>Block Number</th>
+              <th>User</th>
             </tr>
           </thead>
           <tbody>
-            {userActions.map((action, index) => (
+            {logs.map((log, index) => (
               <tr key={index}>
-                <td>{action.action}</td>
-                <td>{action.date}</td>
+                <td>{log.eventName}</td>
+                <td>{log.blockNumber.toString()}</td>
+                <td>{log.args.from}</td>
               </tr>
             ))}
           </tbody>
