@@ -38,7 +38,7 @@ export default function Owner({ owner, address }) {
   return (
     <>
       <span style={{ color: owner === address ? "green" : "red" }}>
-        {owner === address ? (
+        {owner.toLowerCase() === address.toLowerCase() ? (
           <div className="owner-container">
             <div className="action-section">
               <input
