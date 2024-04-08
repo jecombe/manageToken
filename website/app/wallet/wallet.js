@@ -36,7 +36,7 @@ export default function Wallet() {
       const balanceOf = await getReadFunction("balanceOf", [address]);
 
       setTotalSupply(formatEther(totalSupply));
-     setOwner(ownerAddr);
+      setOwner(ownerAddr);
       setBalanceBusd(balanceOf);
    
     } catch (error) {
@@ -117,7 +117,7 @@ export default function Wallet() {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [networks.mumbai],
+        params: [{chainId: networks.mumbai.chainId}],
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
