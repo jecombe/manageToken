@@ -82,17 +82,11 @@ export const getLogsUser = async (userAddress, contractAddress) => {
     const batchSize = BigInt(3000);
 
     let logs = [];
+    let i = 0;
 
-    const numRequests = Math.ceil(Number(blockNumber) / Number(batchSize));
-    console.log("Number request to expect :", numRequests);
-
-    for (let i = 0; i < numRequests; i++) {
+    while (logs.length < 7) {
       let fromBlock = blockNumber - batchSize * BigInt(i + 1);
       let toBlock = blockNumber - batchSize * BigInt(i);
-
-      if (fromBlock < BigInt(0)) {
-        fromBlock = BigInt(0);
-      }
 
       const batchLogs = await ConnectPublicClient().getLogs({
         address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
@@ -108,8 +102,14 @@ export const getLogsUser = async (userAddress, contractAddress) => {
       logs = logs.concat(batchLogs);
 
       console.log(`Logs saved for request ${i + 1}:`, logs.length);
-      if (logs.length >= 10) return logs;
-      if (i < numRequests - 1) {
+      i++;
+
+      if (i > 100) {
+        console.log("Exceeded maximum iterations.");
+        break;
+      }
+
+      if (i > 0) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }

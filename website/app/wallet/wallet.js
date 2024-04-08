@@ -248,7 +248,7 @@ export default function Wallet() {
             owner={owner}
             balanceBusd={balanceBusd}
             userAddr={address}
-            updateBalance={updateBalance}
+            getInfos={getInfos}
           />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 

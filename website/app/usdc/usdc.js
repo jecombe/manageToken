@@ -9,7 +9,13 @@ import {
   waitingTransaction,
 } from "@/utils/utils";
 
-export default function Usdc({ totalSupply, owner, balanceBusd, userAddr, updateBalance }) {
+export default function Usdc({
+  totalSupply,
+  owner,
+  balanceBusd,
+  userAddr,
+  getInfos,
+}) {
   const [mintAmount, setMintAmount] = useState(0);
   const [burnAmount, setBurnAmount] = useState(0);
   const [sendAmount, setSendAmount] = useState(0);
@@ -41,7 +47,7 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr, update
         userAddr
       );
       await waitingTransaction(hash);
-      await updateBalance();
+      await getInfos();
 
       console.log("finish");
       setMintAmount(0);
@@ -64,7 +70,7 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr, update
         userAddr
       );
       await waitingTransaction(hash);
-      await updateBalance();
+      await getInfos();
 
       console.log("finish");
       setBurnAmount(0);
@@ -87,7 +93,7 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr, update
         userAddr
       );
       await waitingTransaction(hash);
-      await updateBalance();
+      await getInfos();
 
       console.log("finish");
       setSendAmount(0);
@@ -153,7 +159,7 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr, update
         userAddr
       );
       await waitingTransaction(hash);
-      await updateBalance();
+      await getInfos();
 
       console.log("finish");
       setTransferFromAmount(0);
