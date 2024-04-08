@@ -35,7 +35,7 @@ export default function Wallet() {
       const ownerAddr = await getReadFunction("getOwner");
       const balanceOf = await getReadFunction("balanceOf", [address]);
 
-      setTotalSupply(formatEther(totalSupply));
+      setTotalSupply(formatEther(totalSupply.toString()));
       setOwner(ownerAddr);
       setBalanceBusd(balanceOf);
     } catch (error) {
@@ -115,7 +115,7 @@ export default function Wallet() {
   const connectToMumbai = async () => {
     try {
       await window.ethereum.request({
-        method: "wallet_addEthereumChain",
+        method: "wallet_switchEthereumChain",
         params: [networks.mumbai],
       });
 
