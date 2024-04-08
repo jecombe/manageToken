@@ -38,7 +38,7 @@ export default function Wallet() {
       setTotalSupply(formatEther(totalSupply.toString()));
     /*  setOwner(ownerAddr);
       setBalanceBusd(balanceOf);*/
-      setTotalSupply(0);
+      //setTotalSupply(0);
       setOwner("fgfgf");
       setBalanceBusd(0);
     } catch (error) {
