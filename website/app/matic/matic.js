@@ -9,7 +9,7 @@ import {
   waitingTransaction,
 } from "@/utils/utils";
 
-export default function Matic({ address, balance }) {
+export default function Matic({ address, balance, updateBalance }) {
   const [sendLoading, setSendLoading] = useState(false);
   const [sendAmount, setSendAmount] = useState(0);
   const [recipient, setRecipient] = useState("");
@@ -24,6 +24,7 @@ export default function Matic({ address, balance }) {
         address
       );
       await waitingTransaction(hash);
+      await updateBalance();
       setSendAmount(0);
       setRecipient("");
       setSendLoading(false);

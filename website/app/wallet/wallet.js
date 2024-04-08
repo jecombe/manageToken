@@ -8,6 +8,7 @@ import Owner from "../owner/owner";
 import { createWallet, getBalanceUser, getReadFunction } from "@/utils/utils";
 import { networks } from "@/utils/networks";
 import "./wallet.css";
+import Information from "../info/information";
 
 export default function Wallet() {
   const [address, setAddress] = useState(null);
@@ -237,14 +238,18 @@ export default function Wallet() {
           <Owner owner={owner} address={address} />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
-          <Matic address={address} balance={Math.round(Number(balance))} />
+          <Matic address={address} balance={Math.round(Number(balance))} updateBalance={updateBalance} />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
           <Usdc
             totalSupply={Math.round(totalSupply)}
             owner={owner}
             balanceBusd={balanceBusd}
             userAddr={address}
+            updateBalance={updateBalance}
           />
+          <hr style={{ width: "100%", borderTop: "3px solid black" }} />
+
+          <Information userAddress={address}/>
         </>
       ) : (
         <h1> Need to connect to your metamask</h1>
