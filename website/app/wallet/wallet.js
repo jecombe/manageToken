@@ -32,14 +32,13 @@ export default function Wallet() {
       setBalance(balance);
       setIsConnect(true);
 
-     const totalSupply = await getReadFunction("totalSupply");
+      const totalSupply = await getReadFunction("totalSupply");
       const ownerAddr = await getReadFunction("getOwner");
       const balanceOf = await getReadFunction("balanceOf", [address]);
 
       setTotalSupply(formatEther(totalSupply));
       setOwner(ownerAddr);
       setBalanceBusd(balanceOf);
-   
     } catch (error) {
       console.error(error);
     }
@@ -118,7 +117,7 @@ export default function Wallet() {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{chainId: networks.mumbai.chainId}],
+        params: [{ chainId: networks.mumbai.chainId }],
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -139,7 +138,7 @@ export default function Wallet() {
           const userResponse = window.confirm(
             "Please switch to Mumbai testnet network to use this application. Do you want to switch now?"
           );
-          setUserResponse(userResponse)
+          setUserResponse(userResponse);
           console.log(userResponse);
           if (userResponse) {
             await connectToMumbai();
@@ -224,12 +223,12 @@ export default function Wallet() {
         ""
       )}
 
-      {!userResponse ?
-      <div>
-      <h1>Wrong network</h1>
-      <h2>Connect to Mumbai testnet to use this dapp</h2>
-      </div>
-      : null}
+      {!userResponse ? (
+        <div>
+          <h1>Wrong network</h1>
+          <h2>Connect to Mumbai testnet to use this dapp</h2>
+        </div>
+      ) : null}
 
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
@@ -238,7 +237,11 @@ export default function Wallet() {
           <Owner owner={owner} address={address} />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
-          <Matic address={address} balance={Math.round(Number(balance))} updateBalance={updateBalance} />
+          <Matic
+            address={address}
+            balance={Math.round(Number(balance))}
+            updateBalance={updateBalance}
+          />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
           <Usdc
             totalSupply={Math.round(totalSupply)}
@@ -249,10 +252,10 @@ export default function Wallet() {
           />
           <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
-          <Information userAddress={address}/>
+          <Information userAddress={address} isConnect={isConnect} />
         </>
       ) : (
-        <h1> Need to connect to your metamask</h1>
+        <h1> Need to connect to your metamask </h1>
       )}
     </div>
   );

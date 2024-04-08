@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import "./owner.css";
-import { getWriteFunction, waitingTransaction } from "@/utils/utils";
+import {
+  getWriteFunction,
+  isAddressEq,
+  waitingTransaction,
+} from "@/utils/utils";
 
 export default function Owner({ owner, address }) {
   const [newOwnerAddress, setNewOwnerAddress] = useState("");
@@ -38,7 +42,7 @@ export default function Owner({ owner, address }) {
   return (
     <>
       <span style={{ color: owner === address ? "green" : "red" }}>
-        {owner.toLowerCase() === address.toLowerCase() ? (
+        {isAddressEq(owner, address) ? (
           <div className="owner-container">
             <div className="action-section">
               <input

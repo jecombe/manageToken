@@ -1,33 +1,30 @@
 import React, { useState, useEffect } from "react";
 import "./information.css";
-import { getLogsUser, getWriteFunction, waitingTransaction } from "@/utils/utils";
+import {
+  getLogsUser,
+  getWriteFunction,
+  waitingTransaction,
+} from "@/utils/utils";
 
-export default function Information({userAddress}) {
+export default function Information({ userAddress, isConnect }) {
   const [userActions, setUserActions] = useState([]);
   const [allActions, setAllActions] = useState([]);
+  const [logs, setLogs] = useState([]);
 
-  // Fonction pour obtenir les 10 dernières actions du smart contract BUSD de l'utilisateur
   const getUserActions = async () => {
-    // Votre logique pour obtenir les actions de l'utilisateur
-    // Par exemple :
-    // const userActions = await getUserActionsFromSmartContract();
-    // setUserActions(userActions);
-    const rep = await getLogsUser("0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35");
-    console.log("::::::::::::::::::::::::::::::", rep);
+    const logs = await getLogsUser(
+      "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
+    );
+    console.log(logs);
   };
 
-  // Fonction pour obtenir toutes les actions des utilisateurs
-  const getAllActions = async () => {
-    // Votre logique pour obtenir toutes les actions des utilisateurs
-    // Par exemple :
-    // const allActions = await getAllActionsFromSmartContract();
-    // setAllActions(allActions);
-  };
+  const getAllActions = async () => {};
 
-  // Appel des fonctions pour obtenir les actions au chargement du composant
   useEffect(() => {
-    getUserActions();
-    getAllActions();
+    if (isConnect) {
+      getUserActions();
+      getAllActions();
+    }
   }, []);
 
   return (
