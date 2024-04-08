@@ -21,6 +21,7 @@ export default function Wallet() {
   const [totalSupply, setTotalSupply] = useState(null);
   const [owner, setOwner] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
+  const [userResponse, setUserResponse] = useState(true);
 
   const getInfos = async (address) => {
     try {
@@ -136,7 +137,8 @@ export default function Wallet() {
           const userResponse = window.confirm(
             "Please switch to Mumbai testnet network to use this application. Do you want to switch now?"
           );
-
+          setUserResponse(userResponse)
+          console.log(userResponse);
           if (userResponse) {
             await connectToMumbai();
           }
@@ -219,6 +221,13 @@ export default function Wallet() {
       ) : (
         ""
       )}
+
+      {!userResponse ?
+      <div>
+      <h1>Wrong network</h1>
+      <h2>Connect to Mumbai testnet to use this dapp</h2>
+      </div>
+      : null}
 
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 

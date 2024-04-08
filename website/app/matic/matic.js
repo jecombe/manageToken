@@ -44,7 +44,7 @@ export default function Matic({ address, balance }) {
         </div>
         <div className="matic-container">
           <div className="matic-details">
-            <h2>Send</h2>
+            <h2>Send MATIC</h2>
           </div>
           {sendLoading ? (
             <div className="loader-container">
@@ -62,7 +62,6 @@ export default function Matic({ address, balance }) {
               <input
                 className="amount-input"
                 type="number"
-                min="0"
                 placeholder="Amount"
                 value={sendAmount}
                 onChange={(event) => setSendAmount(event.target.value)}

@@ -48,10 +48,10 @@ export default function Owner({ owner, address }) {
                 placeholder="New Owner Address"
               />
               <button className="transfer-button" onClick={transferOwnership}>
-                Transfer Ownership
+                Transfer Ownership BUSD
               </button>
               <button className="renounce-button" onClick={renounceOwnership}>
-                Renounce Ownership
+                Renounce Ownership BUSD
               </button>
             </div>
           </div>

@@ -201,7 +201,6 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
               <form onSubmit={handleMintSubmit}>
                 <input
                   type="number"
-                  min="0"
                   value={mintAmount}
                   onChange={(event) => setMintAmount(event.target.value)}
                 />
@@ -218,7 +217,6 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
               <form onSubmit={handleBurnSubmit}>
                 <input
                   type="number"
-                  min="0"
                   value={burnAmount}
                   onChange={(event) => setBurnAmount(event.target.value)}
                 />
@@ -235,7 +233,6 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
               <form onSubmit={handleSendSubmit}>
                 <input
                   type="number"
-                  min="0"
                   placeholder="Amount"
                   value={sendAmount}
                   onChange={(event) => setSendAmount(event.target.value)}
@@ -259,7 +256,6 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
               <form onSubmit={handleApproveSubmit}>
                 <input
                   type="number"
-                  min="0"
                   value={approveAmount}
                   onChange={(event) => setApproveAmount(event.target.value)}
                 />
@@ -282,7 +278,6 @@ export default function Usdc({ totalSupply, owner, balanceBusd, userAddr }) {
               <form onSubmit={handleTransferFromSubmit}>
                 <input
                   type="number"
-                  min="0"
                   value={transferFromAmount}
                   onChange={(event) =>
                     setTransferFromAmount(event.target.value)
