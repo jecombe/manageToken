@@ -47,7 +47,7 @@ export default function Usdc({
         userAddr
       );
       await waitingTransaction(hash);
-      await getInfos();
+      await getInfos(userAddr);
 
       console.log("finish");
       setMintAmount(0);
@@ -70,7 +70,7 @@ export default function Usdc({
         userAddr
       );
       await waitingTransaction(hash);
-      await getInfos();
+      await getInfos(userAddr);
 
       console.log("finish");
       setBurnAmount(0);
@@ -93,7 +93,7 @@ export default function Usdc({
         userAddr
       );
       await waitingTransaction(hash);
-      await getInfos();
+      await getInfos(userAddr);
 
       console.log("finish");
       setSendAmount(0);
@@ -159,7 +159,7 @@ export default function Usdc({
         userAddr
       );
       await waitingTransaction(hash);
-      await getInfos();
+      await getInfos(userAddr);
 
       console.log("finish");
       setTransferFromAmount(0);
