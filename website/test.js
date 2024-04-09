@@ -1,76 +1,69 @@
-import abi from "./utils/abi.js";
-import {
-  createWalletClient,
-  custom,
-  decodeEventLog,
-  formatEther,
-  getContract,
-} from "viem";
-import { polygonMumbai } from "viem/chains";
-import { parseAbiItem } from "viem";
-import { ConnectPublicClient } from "./utils/client.js";
-
-const getActualBlock = () => {
-  return ConnectPublicClient().getBlockNumber();
-};
-
-const getLogsUser = async (userAddress, contractAddress) => {
-  /* const batchSize = 1000n; // Taille du lot pour la pagination
-    const waitTime = 2000; // Temps d'attente entre les requêtes en millisecondes (correspondant à environ 30 requêtes par minute)
-    
-    let logs = [];
-    
-    try {
-      const fromBlock = BigInt(await getActualBlock()); // Dernier bloc
-      const toBlock = 22069112n; // Numéro de bloc de création du contrat
-    
-      let currentBlock = fromBlock;
-    
-      while (currentBlock >= toBlock) { // Inverse l'ordre des blocs, partant du dernier bloc vers le bloc de création du contrat
-        const fromBlockBatch = currentBlock - batchSize + 1n; // Calcule le premier bloc du lot actuel
-    
-        const batchLogs = await ConnectPublicClient().getLogs({
-          address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
-          event: parseAbiItem('event Transfer(address indexed, address indexed, uint256)'),
-          fromBlock: fromBlockBatch >= toBlock ? fromBlockBatch : toBlock, // Assurez-vous que fromBlockBatch ne devienne pas inférieur à toBlock
-          toBlock: currentBlock // Utilisez currentBlock comme toBlock
-        });
-    
-        if (batchLogs.length === 0) {
-          console.log("finis");
-          break; // Si aucun log n'est retourné, cela signifie que nous avons atteint le bloc de création du contrat
-        }
-    
-        logs = batchLogs.concat(logs); // Utilisez concat pour inverser l'ordre des logs
-        console.log(logs);
-    
-        // Définir le prochain bloc de départ pour la prochaine itération
-        currentBlock = fromBlockBatch - 1n;
-    
-        await new Promise(resolve => setTimeout(resolve, waitTime)); // Attendre avant la prochaine requête pour respecter les limites de taux
-      }
-    
-      return logs;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }*/
-
-  try {
-    const blockNumber = await getActualBlock();
-
-    const batchLogs = await ConnectPublicClient().getLogs({
-      address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
-      event: parseAbiItem(
-        "event Transfer(address indexed, address indexed, uint256)"
-      ),
-      fromBlock: fromBlock - 10000,
-      toBlock: fromBlock,
-    });
-
-    console.log("all logs are saved :", batchLogs);
-  } catch (error) {
-    console.log(error);
+const logsArray = [
+  {
+    address: "0x15a40d37e6f8a478dde2cb18c83280d472b2fc35",
+    args: {from: '0x0000000000000000000000000000000000000000', to: '0xbbd95f266F32563aA6A813469947B09cA3727bdb', value: 1000000000000000000n},
+    blockHash: "0xfe18aa0ee241802d2bd7428f510124e6c68da7b9dfed9abe898149fadf4c9269",
+    blockNumber: 48019055n,
+    data: "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+    eventName: "Transfer",
+    logIndex: 2,
+    removed: false,
+    topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', '0x0000000000000000000000000000000000000000000000000000000000000000', '0x000000000000000000000000bbd95f266f32563aa6a813469947b09ca3727bdb'],
+    transactionHash: "0x68807e571ac655926f0237788a1f6811dcaa71f4fcd9ccdb75dc66331cd3767a",
+    transactionIndex: 1
+  },
+  {
+    address: "0x15a40d37e6f8a478dde2cb18c83280d472b2fc35",
+    args: {from: '0x0000000000000000000000000000000000000000', to: '0xbbd95f266F32563aA6A813469947B09cA3727bdb', value: 1000000000000000000n},
+    blockHash: "0xfd930afe7548f7eb1b05c4fef52316a640e68682cde1ce25920b55c7eb389685",
+    blockNumber: 48019115n,
+    data: "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+    eventName: "Transfer",
+    logIndex: 4,
+    removed: false,
+    topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', '0x000000000000000000000000000000000']
   }
-};
-getLogsUser();
+]
+
+let save = [{tranfer: [{"111": {
+  from:1,
+  to:1,
+  value:1
+
+}}]}, {approval: []}]
+
+
+const parsedLogs = logsArray.reduce((accumulator, currentLog) => {
+  // Ajoutez votre logique de parsing ici
+  // Dans cet exemple, nous allons simplement extraire l'adresse et les arguments de chaque objet
+  const { address, args, eventName, blockNumber } = currentLog;
+
+  let parsedLog = {}
+
+  if (eventName === "Tranfer") {
+    parsedLog = {
+      from: args.from,
+      to: args.to,
+      blockNumber,
+      value: args.value.toString(),
+    }
+
+  }
+
+  if (eventName === "Approval") {
+    parsedLog = {
+      event: "approval",
+      blockNumber,
+      owner: args.from,
+      sender: args.to,
+      value: args.value.toString(),
+    }
+
+  }
+ 
+  // Ajoutez l'objet parsé à l'accumulateur
+  accumulator.push(parsedLog);
+  
+  // Retournez l'accumulateur pour la prochaine itération
+  return accumulator;
+}, []);

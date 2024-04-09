@@ -8,8 +8,8 @@ import {
   parseAbi,
 } from "viem";
 import { polygonMumbai } from "viem/chains";
-// import { parseAbiItem } from "viem";
 import { isAddressEqual } from "viem";
+import _ from "lodash"
 
 export const getWriteFunction = async (functionName, args, account) => {
   return ConnectWalletClient().writeContract({
@@ -81,7 +81,89 @@ const rep = {
   approval: [{}],
   allowance: [{ sender: number }],
 };*/
-export const getLogsUser = async (logSave = [], i = 0, blockNumber) => {
+
+const parseResult = (logs) => {
+  
+  return logs.reduce((accumulator, currentLog) => {
+
+    const { args, eventName, blockNumber } = currentLog;
+  
+    let parsedLog = {}
+  
+    if (eventName === "Transfer") {
+      parsedLog = {
+        eventName: "transfer",
+        from: args.from,
+        to: args.to,
+        blockNumber: blockNumber.toString(),
+        value: parseNumberToEth(args.value),
+      }
+      accumulator.push(parsedLog);
+    }
+  
+    if (eventName === "Approval") {
+      parsedLog = {
+        eventName: "approval",
+        blockNumber: blockNumber.toString(),
+        owner: args.owner,
+        sender: args.sender,
+        value: parseNumberToEth(args.value),
+      }
+      accumulator.push(parsedLog);
+    }
+    return accumulator;
+  }, []);
+  
+}
+
+
+export const getAllAllowance = async (logSave, i = 0, blockNumber) => {
+    try {
+      const batchSize = BigInt(3000);
+  
+      const saveLength = logSave.length;
+  
+      while (true) {
+        let fromBlock = blockNumber - batchSize * BigInt(i + 1);
+        let toBlock = blockNumber - batchSize * BigInt(i);
+  
+        const batchLogs = await ConnectPublicClient().getLogs({
+          address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
+        events: parseAbi([
+            "event Approval(address indexed owner, address indexed sender, uint256 value)",
+            "event Transfer(address indexed from, address indexed to, uint256 value)",
+  //          "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+          ]),
+          fromBlock: fromBlock,
+          toBlock: toBlock,
+        });
+        console.log(batchLogs);
+        logSave = logSave.concat(parseResult(batchLogs));
+  
+        console.log(`Logs saved for request ${i + 1}:`, logSave.length);
+        i++;
+  
+        if (i > 100) {
+          console.log("Exceeded maximum iterations.");
+          break;
+        }
+  
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+  
+        if (logSave.length > saveLength) return { logSave, i, blockNumber };
+      }
+      return null;
+    } catch (error) {
+      return error;
+    }
+
+}
+  
+
+
+export const getLogsUser = async (logSave, i = 0, blockNumber) => {
   try {
     const batchSize = BigInt(3000);
 
@@ -96,13 +178,13 @@ export const getLogsUser = async (logSave = [], i = 0, blockNumber) => {
         events: parseAbi([
           "event Approval(address indexed owner, address indexed sender, uint256 value)",
           "event Transfer(address indexed from, address indexed to, uint256 value)",
-          "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+//          "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
         ]),
         fromBlock: fromBlock,
         toBlock: toBlock,
       });
-
-      logSave = logSave.concat(batchLogs);
+      
+      logSave = logSave.concat(parseResult(batchLogs));
 
       console.log(`Logs saved for request ${i + 1}:`, logSave.length);
       i++;
@@ -118,10 +200,54 @@ export const getLogsUser = async (logSave = [], i = 0, blockNumber) => {
 
       if (logSave.length > saveLength) return { logSave, i, blockNumber };
     }
-
-    console.log("all logs are saved :", logSave);
     return null;
   } catch (error) {
-    console.log(error);
+    return error;
+  }
+};
+
+export const getLogsUsers = async (logSave, i = 0, blockNumber, from) => {
+  try {
+    const batchSize = BigInt(3000);
+
+    const saveLength = logSave.length;
+
+    while (logSave.length < 7) {
+      let fromBlock = blockNumber - batchSize * BigInt(i + 1);
+      let toBlock = blockNumber - batchSize * BigInt(i);
+
+      const batchLogs = await ConnectPublicClient().getLogs({
+        address: "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35",
+        events: parseAbi([
+          "event Approval(address indexed owner, address indexed sender, uint256 value)",
+          "event Transfer(address indexed from, address indexed to, uint256 value)",
+//          "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+        ]),
+        args: {
+          from,
+        },
+        fromBlock: fromBlock,
+        toBlock: toBlock,
+      });
+      
+      logSave = logSave.concat(parseResult(batchLogs));
+
+      console.log(`Logs saved for request ${i + 1}:`, logSave.length);
+      i++;
+
+      if (i > 100) {
+        console.log("Exceeded maximum iterations.");
+        break;
+      }
+
+      if (i > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+
+      if (logSave.length > saveLength) return { logSave, i, blockNumber };
+    }
+    return null;
+  } catch (error) {
+    return error;
   }
 };
