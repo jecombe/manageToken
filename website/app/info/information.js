@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./information.css";
 import {
+  getActualBlock,
   getLogsUser,
   //  getAllowance,
   getWriteFunction,
@@ -13,11 +14,25 @@ export default function Information({ userAddress, isConnect }) {
   const [logs, setLogs] = useState([]);
 
   const getUserActions = async () => {
-    const logs = await getLogsUser(
+   /* const logs = await getLogsUser(
       "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
     );
     setLogs(logs);
-    console.log(logs);
+    console.log(logs);*/
+
+   // let save = [];
+    let blockNumberStart = BigInt(await getActualBlock());
+    let save = [];
+    let iSave = 0;
+
+    while (save.length < 7) {
+      const { logSave, i, blockNumber } = await getLogsUser(save, iSave, blockNumberStart);
+      save = logSave;
+      blockNumberStart = blockNumber;
+      iSave = i;
+      console.log("000000000000000000000000000000000",logSave);
+      setLogs(logSave)
+    }
   };
 
   const getAllowances = async () => {

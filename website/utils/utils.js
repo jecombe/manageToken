@@ -81,15 +81,13 @@ const rep = {
   approval: [{}],
   allowance: [{ sender: number }],
 };*/
-export const getLogsUser = async (userAddress, contractAddress) => {
+export const getLogsUser = async (logSave = [], i = 0, blockNumber) => {
   try {
-    const blockNumber = BigInt(await getActualBlock());
     const batchSize = BigInt(3000);
 
-    let logs = [];
-    let i = 0;
+    const saveLength = logSave.length;
 
-    while (logs.length < 7) {
+    while (logSave.length < 7) {
       let fromBlock = blockNumber - batchSize * BigInt(i + 1);
       let toBlock = blockNumber - batchSize * BigInt(i);
 
@@ -104,9 +102,9 @@ export const getLogsUser = async (userAddress, contractAddress) => {
         toBlock: toBlock,
       });
 
-      logs = logs.concat(batchLogs);
+      logSave = logSave.concat(batchLogs);
 
-      console.log(`Logs saved for request ${i + 1}:`, logs.length);
+      console.log(`Logs saved for request ${i + 1}:`, logSave.length);
       i++;
 
       if (i > 100) {
@@ -117,10 +115,12 @@ export const getLogsUser = async (userAddress, contractAddress) => {
       if (i > 0) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
+
+      if (logSave.length > saveLength) return { logSave, i, blockNumber };
     }
 
-    console.log("all logs are saved :", logs);
-    return logs;
+    console.log("all logs are saved :", logSave);
+    return null;
   } catch (error) {
     console.log(error);
   }
