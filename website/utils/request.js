@@ -92,10 +92,9 @@ export const getEventLogs = async (logSave, i = 0, blockNumber) => {
       fromBlock: fromBlock,
       toBlock: toBlock,
     });
-    console.log(batchLogs);
     logSave = logSave.concat(parseResult(batchLogs));
 
-    console.log(`Logs saved for request ${i + 1}:`, logSave.length);
+    console.log(`Logs saved for request ${i + 1}:`, logSave.length, batchLogs);
     i++;
 
     // if (i > 100) {

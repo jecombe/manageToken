@@ -4,6 +4,10 @@ import _ from "lodash";
 
 const skipAddress = ["0x0000000000000000000000000000000000000000"];
 
+const isAddressSkipped = (address) => {
+  return skipAddress.includes(address.toLowerCase()); // Utilisez toLowerCase() pour assurer la comparaison insensible à la casse
+};
+
 export const filterAddresses = (addresses) => {
   return skipAddress.includes(addresses);
 };
@@ -13,12 +17,20 @@ export const parseNumberToEth = (number) => {
 };
 
 export const isAddressEq = (addressOne, addressTwo) => {
-  return isAddressEqual(addressOne, addressTwo);
+  console.log(addressOne, addressTwo);
+  const isOne = isAddressSkipped(addressOne);
+  const isTwo = isAddressSkipped(addressTwo);
+
+  if (!isOne && !isTwo) {
+    return isAddressEqual(addressOne, addressTwo);
+  }
+
+  return false;
 };
 
 export const parseResult = (logs) => {
   return logs.reduce((accumulator, currentLog) => {
-    const { args, eventName, blockNumber } = currentLog;
+    const { args, eventName, blockNumber, transactionHash } = currentLog;
 
     let parsedLog = {};
 
@@ -29,6 +41,7 @@ export const parseResult = (logs) => {
         to: args.to,
         blockNumber: blockNumber.toString(),
         value: parseNumberToEth(args.value),
+        transactionHash,
       };
       accumulator.push(parsedLog);
     }
@@ -40,6 +53,7 @@ export const parseResult = (logs) => {
         owner: args.owner,
         sender: args.sender,
         value: parseNumberToEth(args.value),
+        transactionHash,
       };
       accumulator.push(parsedLog);
     }
