@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./information.css";
-import React from "react";
-
 import { CircleLoader } from "react-spinners";
 import {
   getRateLimits,
@@ -16,15 +14,24 @@ export default function Information({ userAddress, isConnect }) {
   const [logs, setLogs] = useState([]);
   const [allowances, setAllowances] = useState([]);
   const [userLogs, setUserLogs] = useState([]);
+  const [allLogs, setAllLogs] = useState([]);
+
   const [stop, setStop] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [saveData, setSaveData] = useState([]);
+  const [lengthArray, setLengthArray] = useState({
+    all: 0,
+    user: 0,
+    allo: 0,
+  });
   const [objectData, setObjectData] = useState({
     save: [],
     iSave: 0,
     blockNumberStart: 0,
     timePerRequest: 0,
   });
+  const [isStopped, setIsStopped] = useState(true);
+
   const stopRef = useRef(stop);
 
   const processLogsBatch = async () => {
@@ -38,11 +45,14 @@ export default function Information({ userAddress, isConnect }) {
     objectData.save = logSave;
     objectData.blockNumberStart = blockNumber;
 
+    setAllLogs(objectData.save);
     setLogs(objectData.save);
     const user = parseUserLogs(objectData.save, userAddress);
-    setUserLogs(user);
+    if (lengthArray.user < 11) setUserLogs(user);
     setAllowances(parseAllowance(user, userAddress));
-
+    lengthArray.all = objectData.save.length;
+    lengthArray.user = userLogs.length;
+    lengthArray.allo = allowances.length;
     await waitingRate(batchStartTime, objectData.timePerRequest);
   };
 
@@ -70,15 +80,30 @@ export default function Information({ userAddress, isConnect }) {
   }, [stop]);
 
   const stopRequest = () => {
+    console.log("STOP");
     setStop(true);
+    setIsStopped(false);
   };
   const startRequest = () => {
     setStop(false);
+    setIsStopped(true);
+    console.log("start");
     getLogsContract();
   };
 
   return (
     <div className="container">
+      <div>
+        {isStopped ? (
+          <button className="stopButton" onClick={stopRequest}>
+            Stop Fetching
+          </button>
+        ) : (
+          <button className="startButton" onClick={startRequest}>
+            Start Fetching
+          </button>
+        )}
+      </div>
       <div className="top-table">
         <h2>Logs BUSD users</h2>
         {logs.length > 0 ? (
@@ -94,7 +119,7 @@ export default function Information({ userAddress, isConnect }) {
                 </tr>
               </thead>
               <tbody>
-                {logs.map((action, index) => (
+                {allLogs.map((action, index) => (
                   <tr
                     key={index}
                     style={{ overflowY: index >= 1 ? "auto" : "visible" }}
@@ -175,14 +200,6 @@ export default function Information({ userAddress, isConnect }) {
             )}
           </div>
         </div>
-      </div>
-      <div>
-        <button className="startButton" onClick={startRequest}>
-          Start
-        </button>
-        <button className="stopButton" onClick={stopRequest}>
-          Stop
-        </button>
       </div>
     </div>
   );
