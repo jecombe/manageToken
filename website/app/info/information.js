@@ -3,28 +3,13 @@ import "./information.css";
 import React from "react";
 
 import { CircleLoader } from "react-spinners";
-import { filterAddresses, isAddressEq } from "@/utils/utils";
+import {
+  getRateLimits,
+  parseAllowance,
+  parseUserLogs,
+  waitingRate,
+} from "@/utils/utils";
 import { getEventLogs, getActualBlock } from "@/utils/request";
-import { Accordion, AccordionItem } from "@nextui-org/react";
-
-const parseAllowance = (event) => {
-  return event.reduce((accumulator, currentValue) => {
-    if (currentValue.eventName === "approval") {
-      accumulator.push(currentValue);
-    }
-    return accumulator;
-  }, []);
-};
-
-const parseUserLogs = (event, addressUser) => {
-  return event.reduce((accumulator, currentValue) => {
-    console.log("BEFORE FIRSTOOO => ", currentValue);
-    if (isAddressEq(addressUser, currentValue?.owner || currentValue?.from)) {
-      accumulator.push(currentValue);
-    }
-    return accumulator;
-  }, []);
-};
 
 export default function Information({ userAddress, isConnect }) {
   const [loading, setLoading] = useState(true);
@@ -35,8 +20,6 @@ export default function Information({ userAddress, isConnect }) {
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [saveData, setSaveData] = useState([]);
   const stopRef = useRef(stop);
-
-  const setData = ({ logSave, i, blockNumber }) => {};
 
   const processLogsBatch = async (params) => {
     const batchStartTime = Date.now();
@@ -54,19 +37,7 @@ export default function Information({ userAddress, isConnect }) {
     setUserLogs(user);
     setAllowances(parseAllowance(user, userAddress));
 
-    await waitingRate(batchStartTime, params);
-  };
-
-  const waitingRate = async (batchStartTime, params) => {
-    const elapsedTime = Date.now() - batchStartTime;
-    const waitTime = Math.max(0, params.timePerRequest - elapsedTime);
-    return new Promise((resolve) => setTimeout(resolve, waitTime));
-  };
-
-  const getRateLimits = () => {
-    const requestsPerMinute = 1800;
-    const millisecondsPerMinute = 60000;
-    return millisecondsPerMinute / requestsPerMinute;
+    await waitingRate(batchStartTime, params.timePerRequest);
   };
 
   const getLogsContract = async () => {
@@ -85,48 +56,8 @@ export default function Information({ userAddress, isConnect }) {
     }
   };
 
-  // const getLogsContract = async () => {
-  //   const batchSize = 100; // Taille du lot
-  //   const requestsPerMinute = 1800;
-  //   const millisecondsPerMinute = 60000;
-  //   const timePerRequest = millisecondsPerMinute / requestsPerMinute;
-
-  //   try {
-  //     let blockNumberStart = BigInt(await getActualBlock());
-  //     let allLogs = [];
-  //     let iSave = 0;
-
-  //     const processLogsBatch = async () => {
-  //       const batchStartTime = Date.now();
-  //       const { logSave, i, blockNumber } = await getEventLogs(
-  //         allLogs,
-  //         iSave,
-  //         blockNumberStart
-  //       );
-  //       iSave = i;
-  //       allLogs = [...allLogs, ...logSave];
-  //       blockNumberStart = blockNumber;
-
-  //       setLogs(allLogs);
-  //       const user = parseUserLogs(allLogs, userAddress);
-  //       setUserLogs(user);
-  //       setAllowances(parseAllowance(user, userAddress));
-
-  //       const elapsedTime = Date.now() - batchStartTime;
-  //       const waitTime = Math.max(0, timePerRequest - elapsedTime);
-  //       await new Promise((resolve) => setTimeout(resolve, waitTime));
-  //     };
-
-  //     while (!stopRef.current) {
-  //       await processLogsBatch();
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
   useEffect(() => {
-    stopRef.current = stop; // Mettre à jour la valeur de stopRef.current lorsque stop change
+    stopRef.current = stop;
   }, [stop]);
 
   useEffect(() => {
@@ -136,17 +67,11 @@ export default function Information({ userAddress, isConnect }) {
   }, [stop]);
 
   const stopRequest = () => {
-    console.log("OOOOOOOOOOOOOOOOOOOOJK");
     setStop(true);
   };
   const startRequest = () => {
     setStop(false);
     getLogsContract();
-  };
-
-  // Fonction pour afficher les détails du bloc sélectionné
-  const handleBlockClick = (blockNumber) => {
-    setSelectedBlock(blockNumber); // Met à jour l'état du numéro de bloc sélectionné
   };
 
   return (

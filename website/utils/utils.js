@@ -17,7 +17,6 @@ export const parseNumberToEth = (number) => {
 };
 
 export const isAddressEq = (addressOne, addressTwo) => {
-  console.log(addressOne, addressTwo);
   const isOne = isAddressSkipped(addressOne);
   const isTwo = isAddressSkipped(addressTwo);
 
@@ -66,3 +65,33 @@ export const event = [
   "event Transfer(address indexed from, address indexed to, uint256 value)",
   "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
 ];
+
+export const parseAllowance = (event) => {
+  return event.reduce((accumulator, currentValue) => {
+    if (currentValue.eventName === "approval") {
+      accumulator.push(currentValue);
+    }
+    return accumulator;
+  }, []);
+};
+
+export const parseUserLogs = (event, addressUser) => {
+  return event.reduce((accumulator, currentValue) => {
+    if (isAddressEq(addressUser, currentValue?.owner || currentValue?.from)) {
+      accumulator.push(currentValue);
+    }
+    return accumulator;
+  }, []);
+};
+
+export const waitingRate = async (batchStartTime, timePerRequest) => {
+  const elapsedTime = Date.now() - batchStartTime;
+  const waitTime = Math.max(0, timePerRequest - elapsedTime);
+  return new Promise((resolve) => setTimeout(resolve, waitTime));
+};
+
+export const getRateLimits = () => {
+  const requestsPerMinute = 1800;
+  const millisecondsPerMinute = 60000;
+  return millisecondsPerMinute / requestsPerMinute;
+};
