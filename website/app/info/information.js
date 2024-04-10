@@ -1,208 +1,159 @@
 import React, { useState, useEffect } from "react";
 import "./information.css";
-import {
-  getActualBlock,
-  getAllAllowance,
-  getLogsUser,
-  getLogsUsers,
-  //  getAllowance,
-  getWriteFunction,
-  waitingTransaction,
-} from "@/utils/utils";
+import { CircleLoader } from "react-spinners";
+import { filterAddresses, isAddressEq } from "@/utils/utils";
+import { getEventLogs, getActualBlock } from "@/utils/request";
 
-
-const isBlockExist = (toCompare, keyToCheck) => {
-  return Object.keys(toCompare).includes(keyToCheck);
-
-
-}
-
-const addingData = (isExist, model, log) => {
-  if (isExist) {
-    model.push(log)
-  } else {
-    model.push({ [log.blockNumber]: { ...log } });
-  }
-  return model;
-}
-
-
-const getObjet = (toFind, key) => {
-  return toFind.findIndex(obj => Object.keys(obj).includes(key));
+const parseAllowance = (event, addressUser) => {
+  return event.reduce((accumulator, currentValue) => {
+    if (
+      currentValue.eventName === "approval" &&
+      filterAddresses(addressUser) &&
+      isAddressEq(addressUser, currentValue.owner)
+    ) {
+      accumulator.push(currentValue);
+    }
+    return accumulator;
+  }, []);
 };
 
+const parseUserLogs = (event, addressUser) => {
+  return event.reduce((accumulator, currentValue) => {
+    if (isAddressEq(addressUser, currentValue.owner)) {
+      accumulator.push(currentValue);
+    }
+    return accumulator;
+  }, []);
+};
 
 export default function Information({ userAddress, isConnect }) {
-  const [userActions, setUserActions] = useState([]);
-  const [allActions, setAllActions] = useState([]);
-  const [loading, setLoading] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState([]);
+  const [allowances, setAllowances] = useState([]);
+  const [userLogs, setUserLogs] = useState([]);
+  const [stop, setStop] = useState(false);
 
-  /*const parseFinal = (save, model, indexStart) => {
-
-
-
-
-    save.forEach((log, index) => {
-      if (index > indexStart) {
-
-        if (log.eventName === "transfer") {
-          const index = getObjet(model, "transfer");
-          const isExist = isBlockExist(model[index].transfer, log.blockNumber);
-          console.log(isExist);
-          model[index].transfer = addingData(isExist, model[index].transfer, log);
-        } else if (log.eventName === "approval") {
-          const index = getObjet(model, "approval");
-          const isExist = isBlockExist(model[index].approval, log.blockNumber);
-          model[index].approval = addingData(isExist, model[index].approval, log);
-        }
+  const getLogsContract = async () => {
+    let blockNumberStart = BigInt(await getActualBlock());
+    console.log(blockNumberStart);
+    let save = [];
+    let iSave = 0;
+    try {
+      while (!stop) {
+        const { logSave, i, blockNumber } = await getEventLogs(
+          save,
+          iSave,
+          blockNumberStart
+        );
+        if (logSave) save = logSave;
+        blockNumberStart = blockNumber;
+        iSave = i;
+        setLogs(save);
+        console.log(save);
+        setAllowances(parseAllowance(save, userAddress));
+        setUserLogs(parseUserLogs(save, userAddress));
+        if (stop) return;
       }
-    });
-
-    return model;
-  }*/
-
-  const getUserActions = async () => {
-    let blockNumberStart = BigInt(await getActualBlock());
-    let save = [];
-    let iSave = 0;
-    let index = 0
-    // let saveFinal = [{ transfer: [] }, { approval: [] }];
-
-    while (save.length < 7) {
-      const { logSave, i, blockNumber } = await getLogsUser(save, iSave, blockNumberStart);
-      //const final = parseFinal(logSave, saveFinal, index)
-      index = logSave.length - 1;
-      //saveFinal = final;
-      save = logSave
-      blockNumberStart = blockNumber;
-      iSave = i;
-      setLogs(save)
+    } catch (error) {
+      console.error(error);
     }
   };
-  const getAllowances = async () => {
-    // const logs = await getAllowance(
-    //   "0x15A40d37e6f8A478DdE2cB18c83280D472B2fC35"
-    // );
-    // setLogs(logs);
-    console.log(logs);
-
-  };
-
-  const getAllActions = async () => {
-    let blockNumberStart = BigInt(await getActualBlock());
-    let save = [];
-    let iSave = 0;
-    let index = 0
-    // let saveFinal = [{ transfer: [] }, { approval: [] }];
-
-    while (save.length < 7) {
-      console.log("**************************", userAddress);
-      const { logSave, i, blockNumber } = await getLogsUsers(save, iSave, blockNumberStart, userAddress);
-      //const final = parseFinal(logSave, saveFinal, index)
-      index = logSave.length - 1;
-      //saveFinal = final;
-      save = logSave
-      blockNumberStart = blockNumber;
-      iSave = i;
-      console.log(save);
-      //setLogs(save)
-    }
-  };
-
-  const getAllo = async () => {
-    let blockNumberStart = BigInt(await getActualBlock());
-    let save = [];
-    let iSave = 0;
-    let index = 0
-    while (save.length < 7) {
-      console.log("**************************", userAddress);
-      const { logSave, i, blockNumber } = await getAllAllowance(save, iSave, blockNumberStart, userAddress);
-      //const final = parseFinal(logSave, saveFinal, index)
-      index = logSave.length - 1;
-      //saveFinal = final;
-      save = logSave
-      blockNumberStart = blockNumber;
-      iSave = i;
-      console.log(save);
-      //setLogs(save)
-    }
-  }
 
   useEffect(() => {
-    if (isConnect) {
-      getAllo()
-      //  getUserActions();
-     /// getAllActions();
+    console.log("STOP => ", stop);
+  }, [stop]);
+
+  useEffect(() => {
+    if (isConnect && !stop) {
+      getLogsContract();
     }
-  }, []);
+  }, [stop]);
 
-
-  function renderTableRow(eventName, event, index) {
-    return (
-      <tr key={index}>
-        <td>{eventName}</td>
-        {Object.keys(event).map(blockNumber => (
-          <React.Fragment key={blockNumber}>
-            <td>{event[blockNumber].from}</td>
-            <td>{event[blockNumber].to}</td>
-            <td>{blockNumber}</td>
-          </React.Fragment>
-        ))}
-      </tr>
-    );
-  }
-
-
+  const stopRequest = () => {
+    console.log("OOOOOOOOOOOOOOOOOOOOJK");
+    setStop(true);
+    console.log("État d'arrêt :", stop);
+  };
+  const startRequest = () => {
+    setStop(false);
+    getLogsContract();
+  };
 
   return (
-    <div className="information-container">
-      <div className="user-actions">
-        <h2>Last 10 action of user {userAddress}</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Event</th>
-              <th>Block Number</th>
-              <th>User</th>
-            </tr>
-          </thead>
-          <tbody>
-            {console.log(logs)}
-
-          </tbody>
-        </table>
+    <>
+      <div>
+        <button onClick={stopRequest}>Stop requests </button>
+        <button onClick={startRequest}>Start requests </button>
       </div>
-      <div className="all-actions">
-        <h2> Last 10 actions of all users</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Event</th>
-              <th>Block</th>
-              <th>From</th>
-              <th>To</th>
-              <th>Value</th>
-
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((action, index) => (
-              <tr key={index}>
-                <td>{action.eventName}</td>
-                <td>{action.blockNumber}</td>
-                <td>{action?.from || action?.sender}</td>
-                <td>{action?.to || action?.owner}</td>
-                <td>{action.value}</td>
-
+      <div className="information-container">
+        <div className="user-actions">
+          <h2>Last 10 action of user {userAddress}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Block Number</th>
+                <th>To</th>
+                <th>Value</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {logs.map((action, index) => (
+                <tr key={index}>
+                  <td>{action.eventName}</td>
+                  <td>{action.blockNumber}</td>
+                  <td>{action?.to || action?.sender}</td>
+                  <td>{action.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="all-actions">
+          <h2> Last 10 actions of all users</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Block</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((action, index) => (
+                <tr key={index}>
+                  <td>{action.eventName}</td>
+                  <td>{action.blockNumber}</td>
+                  <td>{action?.from || action?.owner}</td>
+                  <td>{action?.to || action?.sender}</td>
+                  <td>{action.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <h2>Allowances of User</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Block Number</th>
+                <th>Sender</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allowances.map((allowance, index) => (
+                <tr key={index}>
+                  <td>{allowance.blockNumber}</td>
+                  <td>{allowance.sender}</td>
+                  <td>{allowance.amount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-

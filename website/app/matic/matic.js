@@ -3,11 +3,8 @@ import React, { useState } from "react";
 import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./matic.css";
-import {
-  parseNumberToEth,
-  sendTransaction,
-  waitingTransaction,
-} from "@/utils/utils";
+import { parseNumberToEth } from "@/utils/utils";
+import { sendTransaction, waitingTransaction } from "@/utils/request";
 
 export default function Matic({ address, balance, updateBalance }) {
   const [sendLoading, setSendLoading] = useState(false);

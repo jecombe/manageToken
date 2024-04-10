@@ -5,7 +5,8 @@ import { CircleLoader } from "react-spinners";
 import Matic from "../matic/matic";
 import Usdc from "../usdc/usdc";
 import Owner from "../owner/owner";
-import { createWallet, getBalanceUser, getReadFunction } from "@/utils/utils";
+import { createWallet, getBalanceUser, getReadFunction } from "@/utils/request";
+
 import { networks } from "@/utils/networks";
 import "./wallet.css";
 import Information from "../info/information";

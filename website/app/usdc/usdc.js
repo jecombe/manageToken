@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { parseEther } from "viem";
 import { CircleLoader } from "react-spinners";
 import "./usdc.css";
+import { parseNumberToEth } from "@/utils/utils";
 import {
   getReadFunction,
   getWriteFunction,
-  parseNumberToEth,
   waitingTransaction,
-} from "@/utils/utils";
+} from "@/utils/request";
 
 export default function Usdc({
   totalSupply,

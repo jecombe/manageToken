@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import "./owner.css";
-import {
-  getWriteFunction,
-  isAddressEq,
-  waitingTransaction,
-} from "@/utils/utils";
-
+import { isAddressEq } from "@/utils/utils";
+import { getWriteFunction, waitingTransaction } from "@/utils/request";
 export default function Owner({ owner, address }) {
   const [newOwnerAddress, setNewOwnerAddress] = useState("");
 
