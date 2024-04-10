@@ -19,37 +19,40 @@ export default function Information({ userAddress, isConnect }) {
   const [stop, setStop] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [saveData, setSaveData] = useState([]);
+  const [objectData, setObjectData] = useState({
+    save: [],
+    iSave: 0,
+    blockNumberStart: 0,
+    timePerRequest: 0,
+  });
   const stopRef = useRef(stop);
 
-  const processLogsBatch = async (params) => {
+  const processLogsBatch = async () => {
     const batchStartTime = Date.now();
     const { logSave, i, blockNumber } = await getEventLogs(
-      params.save,
-      params.iSave,
-      params.blockNumberStart
+      objectData.save,
+      objectData.iSave,
+      objectData.blockNumberStart
     );
-    params.iSave = i;
-    params.save = logSave;
-    params.blockNumberStart = blockNumber;
+    objectData.iSave = i;
+    objectData.save = logSave;
+    objectData.blockNumberStart = blockNumber;
 
-    setLogs(params.save);
-    const user = parseUserLogs(params.save, userAddress);
+    setLogs(objectData.save);
+    const user = parseUserLogs(objectData.save, userAddress);
     setUserLogs(user);
     setAllowances(parseAllowance(user, userAddress));
 
-    await waitingRate(batchStartTime, params.timePerRequest);
+    await waitingRate(batchStartTime, objectData.timePerRequest);
   };
 
   const getLogsContract = async () => {
     try {
-      let params = {
-        save: [],
-        iSave: 0,
-        blockNumberStart: BigInt(await getActualBlock()),
-        timePerRequest: getRateLimits(),
-      };
+      objectData.blockNumberStart = BigInt(await getActualBlock());
+      objectData.timePerRequest = getRateLimits();
+
       while (!stopRef.current) {
-        await processLogsBatch(params);
+        await processLogsBatch();
       }
     } catch (error) {
       console.error(error);
@@ -78,55 +81,27 @@ export default function Information({ userAddress, isConnect }) {
     <div className="container">
       <div className="top-table">
         <h2>Logs BUSD users</h2>
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Block</th>
-                <th>Event</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((action, index) => (
-                <tr
-                  key={index}
-                  style={{ overflowY: index >= 1 ? "auto" : "visible" }}
-                >
-                  <td>{action.blockNumber}</td>
-                  <td>{action.eventName}</td>
-                  <td>{action?.from || action?.sender}</td>
-                  <td>{action?.to || action?.owner}</td>
-                  <td>{action.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div className="bottom-tables">
-        <div className="side-by-side">
+        {logs.length > 0 ? (
           <div className="table-container">
-            <h2>Your BUSD logs</h2>
             <table className="table">
               <thead>
                 <tr>
                   <th>Block</th>
                   <th>Event</th>
+                  <th>From</th>
                   <th>To</th>
                   <th>Value</th>
                 </tr>
               </thead>
               <tbody>
-                {userLogs.map((action, index) => (
+                {logs.map((action, index) => (
                   <tr
                     key={index}
                     style={{ overflowY: index >= 1 ? "auto" : "visible" }}
                   >
                     <td>{action.blockNumber}</td>
                     <td>{action.eventName}</td>
+                    <td>{action?.from || action?.sender}</td>
                     <td>{action?.to || action?.owner}</td>
                     <td>{action.value}</td>
                   </tr>
@@ -134,36 +109,80 @@ export default function Information({ userAddress, isConnect }) {
               </tbody>
             </table>
           </div>
+        ) : (
+          <p>Loading...</p>
+        )}
+      </div>
+
+      <div className="bottom-tables">
+        <div className="side-by-side">
+          <div className="table-container">
+            <h2>Your BUSD logs</h2>
+            {userLogs.length > 0 ? (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Block</th>
+                    <th>Event</th>
+                    <th>To</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userLogs.map((action, index) => (
+                    <tr
+                      key={index}
+                      style={{ overflowY: index >= 1 ? "auto" : "visible" }}
+                    >
+                      <td>{action.blockNumber}</td>
+                      <td>{action.eventName}</td>
+                      <td>{action?.to || action?.owner}</td>
+                      <td>{action.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>Loading...</p>
+            )}
+          </div>
           <div className="table-container">
             <h2>Your Allowances</h2>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Block</th>
-                  <th>Sender</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allowances.map((action, index) => (
-                  <tr
-                    key={index}
-                    style={{ overflowY: index >= 1 ? "auto" : "visible" }}
-                  >
-                    <td>{action.blockNumber}</td>
-                    <td>{action?.from || action?.sender}</td>
-                    <td>{action.value}</td>
+            {allowances.length > 0 ? (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Block</th>
+                    <th>Sender</th>
+                    <th>Value</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {allowances.map((action, index) => (
+                    <tr
+                      key={index}
+                      style={{ overflowY: index >= 1 ? "auto" : "visible" }}
+                    >
+                      <td>{action.blockNumber}</td>
+                      <td>{action?.from || action?.sender}</td>
+                      <td>{action.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>Loading...</p>
+            )}
           </div>
         </div>
       </div>
       <div>
-        {/* Boutons "Start" et "Stop" pour démarrer et arrêter le fetching */}
-        <button onClick={startRequest}>Start</button>
-        <button onClick={stopRequest}>Stop</button>
+        <button className="startButton" onClick={startRequest}>
+          Start
+        </button>
+        <button className="stopButton" onClick={stopRequest}>
+          Stop
+        </button>
       </div>
     </div>
   );

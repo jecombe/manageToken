@@ -77,7 +77,7 @@ export const isAddressEq = (addressOne, addressTwo) => {
   return isAddressEqual(addressOne, addressTwo);
 };
 
-export const getEventLogs = async (logSave, i = 0, blockNumber) => {
+export const getEventLogs = async (logSave, i, blockNumber) => {
   try {
     const batchSize = BigInt(3000);
 
@@ -97,17 +97,12 @@ export const getEventLogs = async (logSave, i = 0, blockNumber) => {
     console.log(`Logs saved for request ${i + 1}:`, logSave.length, batchLogs);
     i++;
 
-    // if (i > 100) {
-    //   console.log("Exceeded maximum iterations.");
-    //   break;
-    // }
-
     if (i > 0) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
     if (logSave.length > saveLength) return { logSave, i, blockNumber };
-    //  }
+
     return { logSave, i, blockNumber };
   } catch (error) {
     return error;
