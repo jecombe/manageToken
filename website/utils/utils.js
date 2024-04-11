@@ -5,7 +5,7 @@ import _ from "lodash";
 const skipAddress = ["0x0000000000000000000000000000000000000000"];
 
 const isAddressSkipped = (address) => {
-  return skipAddress.includes(address.toLowerCase()); // Utilisez toLowerCase() pour assurer la comparaison insensible à la casse
+  return skipAddress.includes(address.toLowerCase());
 };
 
 export const filterAddresses = (addresses) => {
