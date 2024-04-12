@@ -118,12 +118,12 @@ export default function Wallet() {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: networks.mumbai.chainId }],
+        params: [{ chainId: networks.sepolia.chainId }],
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      console.error("Error connecting to Mumbai testnet:", error);
+      console.error("Error connecting to Sepolia testnet:", error);
       return error;
     }
   };
