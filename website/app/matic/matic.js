@@ -37,12 +37,12 @@ export default function Matic({ address, balance, updateBalance }) {
     return (
       <>
         <div className="matic-info-container">
-          <h1>MATIC</h1>
-          <h2>Balance: {parseNumberToEth(balance)} MATIC</h2>
+          <h1>ETH</h1>
+          <h2>Balance: {parseNumberToEth(balance)} ETH</h2>
         </div>
         <div className="matic-container">
           <div className="matic-details">
-            <h2>Send MATIC</h2>
+            <h2>Send ETH</h2>
           </div>
           {sendLoading ? (
             <div className="loader-container">

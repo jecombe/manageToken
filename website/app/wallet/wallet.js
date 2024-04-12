@@ -134,10 +134,10 @@ export default function Wallet() {
         const networkId = await window.ethereum.request({
           method: "eth_chainId",
         });
-
-        if (networkId !== networks.mumbai.chainId) {
+        console.log(networkId);
+        if (networkId !== networks.sepolia.chainId) {
           const userResponse = window.confirm(
-            "Please switch to Mumbai testnet network to use this application. Do you want to switch now?"
+            "Please switch to Sepolia testnet network to use this application. Do you want to switch now?"
           );
           setUserResponse(userResponse);
           console.log(userResponse);
@@ -227,7 +227,7 @@ export default function Wallet() {
       {!userResponse ? (
         <div>
           <h1>Wrong network</h1>
-          <h2>Connect to Mumbai testnet to use this dapp</h2>
+          <h2>Connect to Sepolia testnet to use this dapp</h2>
         </div>
       ) : null}
 

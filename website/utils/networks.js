@@ -21,4 +21,15 @@ export const networks = {
     rpcUrls: ["https://rpc.ankr.com/polygon_mumbai"],
     blockExplorerUrls: ["https://mumbai.polygonscan.com"],
   },
+  sepolia: {
+    chainId: "0xaa36a7",
+    chainName: "Sepolia",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com"],
+    blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  },
 };
