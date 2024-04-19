@@ -84,9 +84,7 @@ export default function Information({ userAddress, isConnect }) {
 
 
     setVolumes(_.reverse(volumesDaily.map(item => {
-        // Extraire la date sans l'heure de chaque timestamp
         const dateWithoutTime = new Date(item.timestamp).toISOString().split('T')[0];
-        // Retourner un nouvel objet avec la date mise à jour
         return { ...item, timestamp: dateWithoutTime };
     })))
 
