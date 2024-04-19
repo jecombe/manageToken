@@ -1,13 +1,17 @@
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 import "./information.css";
 import { CircleLoader } from "react-spinners";
 import {
   getRateLimits,
   parseAllowance,
+  parseNumberToEth,
   parseUserLogs,
   waitingRate,
 } from "@/utils/utils";
 import { getEventLogs, getActualBlock } from "@/utils/request";
+import { deleteBdd, fetchAllLogs, fetchAllLogsFromAddr, fetchAllowancesFromAddr, fetchTranferFromAddr, fetchVolumesDaily } from "@/utils/server";
+import VolumeChart from "../chart/chart";
 
 export default function Information({ userAddress, isConnect }) {
   const [loadingAll, setLoadingAll] = useState(true)
@@ -15,22 +19,20 @@ export default function Information({ userAddress, isConnect }) {
   const [loadingAllowance, setLoadingAllowance] = useState(true)
 
   const [allowances, setAllowances] = useState([]);
+  const [volumes, setVolumes] = useState([]);
   const [userLogs, setUserLogs] = useState([]);
   const [allLogs, setAllLogs] = useState([]);
+  const [intervalId, setIntervalId] = useState(null);
+
 
   const [stop, setStop] = useState(false);
 
-  const [objectData, setObjectData] = useState({
-    save: [],
-    iSave: 0,
-    blockNumberStart: 0,
-    timePerRequest: 0,
-  });
+
   const [isStopped, setIsStopped] = useState(true);
 
   const stopRef = useRef(stop);
 
-  const processLogsBatch = async () => {
+  /*const processLogsBatch = async () => {
     const batchStartTime = Date.now();
     const { logSave, i, blockNumber } = await getEventLogs(
       objectData.save,
@@ -46,7 +48,7 @@ export default function Information({ userAddress, isConnect }) {
     setUserLogs(user);
     setAllowances(parseAllowance(user, userAddress));
     await waitingRate(batchStartTime, objectData.timePerRequest);
-  };
+  };*/
 
   const setLoading = (isLoading) => {
     setLoadingAll(isLoading);
@@ -54,14 +56,67 @@ export default function Information({ userAddress, isConnect }) {
     setLoadingAllowance(isLoading);
   }
 
+
+
+  const getDataFromDb = async () => {
+
+    const requests = [
+      { id: "allLogs", promise: fetchAllLogs() },
+      { id: "allLogsFromAddr", promise: fetchAllLogsFromAddr(userAddress) },
+      { id: "allowancesFromAddr", promise: fetchAllowancesFromAddr(userAddress) },
+      { id: "tranferFromAddr", promise: fetchTranferFromAddr(userAddress) },
+      { id: "volumesDaily", promise: fetchVolumesDaily(userAddress) }
+
+    ];
+
+    return Promise.all(requests.map(req => req.promise))
+      .then(responses => {
+        const results = {};
+        responses.forEach((response, index) => {
+          results[requests[index].id] = response;
+        });
+        return results
+      }).catch(e => {
+        console.log(e)
+      })
+
+  }
+
+  const parsingDataApi = (result) => {
+    const { allLogs, allLogsFromAddr, allowancesFromAddr, volumesDaily } = result;
+    setAllLogs(allLogs)
+    setUserLogs(allLogsFromAddr);
+    setAllowances(allowancesFromAddr)
+    console.log("QQQQQQQQQQQQQQQQQQQQQQQQqq", volumesDaily);
+    setVolumes(volumesDaily)
+
+  }
+
+  const startIntervalFetching = () => {
+    const intervalId = setInterval(async () => {
+      try {
+        console.log("interval fetching");
+        const repUserTx = await getDataFromDb()
+        console.log(repUserTx);
+        parsingDataApi(repUserTx);
+      } catch (error) {
+        console.error(error);
+      }
+
+    }, 60000);
+//
+    setIntervalId(intervalId);
+  }
+
+
   const getLogsContract = async () => {
     try {
-      objectData.blockNumberStart = BigInt(await getActualBlock());
-      objectData.timePerRequest = getRateLimits();
+      console.log("waiting data...");
+      const repUserTx = await getDataFromDb()
+      console.log(repUserTx);
+      parsingDataApi(repUserTx);
+      startIntervalFetching()
 
-      while (!stopRef.current) {
-        await processLogsBatch();
-      }
     } catch (error) {
       console.error(error);
       setLoading(false);
@@ -83,32 +138,40 @@ export default function Information({ userAddress, isConnect }) {
     setStop(true);
     setIsStopped(false);
     setLoading(false);
+    clearInterval(intervalId)
+    setIntervalId(0)
   };
   const startRequest = () => {
     setStop(false);
     setIsStopped(true);
     setLoading(true);
+    startIntervalFetching();
     console.log("start");
   };
 
-  const cleanData = () => {
-    setObjectData({
-      save: [],
-      iSave: 0,
-      blockNumberStart: 0,
-      timePerRequest: 0,
-    })
-  }
+  const resetData = async () => {
+    try {
+      const rep = await deleteBdd();
+      console.log("DELETE -> ", rep);
+      setAllLogs([]);
+      setAllowances([]);
+      setUserLogs([]);
 
+    } catch (error) {
+      console.log(error);
+    }
+  }
+ 
   const resetRequest = () => {
     setStop(true);
     setIsStopped(false);
     setLoading(false);
-    cleanData()
+    resetData();
     setTimeout(() => {
       setStop(false);
       setIsStopped(true);
-      setLoading(true)
+      setLoading(true);
+
     }, 2000);
 
   };
@@ -156,10 +219,10 @@ export default function Information({ userAddress, isConnect }) {
                       key={index}
                       style={{ overflowY: index >= 1 ? "auto" : "visible" }}
                     >
-                      <td>{action.blockNumber}</td>
-                      <td>{action.eventName}</td>
-                      <td>{action?.from || action?.sender}</td>
-                      <td>{action?.to || action?.owner}</td>
+                      <td>{action.blocknumber}</td>
+                      <td>{action.eventname}</td>
+                      <td>{action?.fromaddress}</td>
+                      <td>{action?.toaddress}</td>
                       <td>{action.value}</td>
                     </tr>
                   ))}
@@ -197,9 +260,9 @@ export default function Information({ userAddress, isConnect }) {
                         key={index}
                         style={{ overflowY: index >= 1 ? "auto" : "visible" }}
                       >
-                        <td>{action.blockNumber}</td>
-                        <td>{action.eventName}</td>
-                        <td>{action?.to || action?.owner}</td>
+                        <td>{action.blocknumber}</td>
+                        <td>{action.eventname}</td>
+                        <td>{action?.toaddress}</td>
                         <td>{action.value}</td>
                       </tr>
                     ))}
@@ -232,8 +295,8 @@ export default function Information({ userAddress, isConnect }) {
                         key={index}
                         style={{ overflowY: index >= 1 ? "auto" : "visible" }}
                       >
-                        <td>{action.blockNumber}</td>
-                        <td>{action?.from || action?.sender}</td>
+                        <td>{action.blocknumber}</td>
+                        <td>{action?.fromaddress}</td>
                         <td>{action.value}</td>
                       </tr>
                     ))}
@@ -243,6 +306,11 @@ export default function Information({ userAddress, isConnect }) {
             )}
           </div>
         </div>
+      </div>
+      <div>
+        <h1>CHART</h1>
+        {!_.isEmpty(volumes) ?  <VolumeChart data={volumes}/> : <p>Loading..</p>}
+       
       </div>
     </div>
   );

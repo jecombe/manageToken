@@ -65,10 +65,6 @@ export const sendTransaction = (value, to, account) => {
   });
 };
 
-export const parseNumberToEth = (number) => {
-  return Number(formatEther(number.toString())).toFixed(2);
-};
-
 export const getActualBlock = () => {
   return ConnectPublicClient().getBlockNumber();
 };

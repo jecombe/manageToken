@@ -1,4 +1,3 @@
-import abi from "./abi";
 import { formatEther, isAddressEqual } from "viem";
 import _ from "lodash";
 
@@ -13,7 +12,8 @@ export const filterAddresses = (addresses) => {
 };
 
 export const parseNumberToEth = (number) => {
-  return Number(formatEther(number.toString())).toFixed(2);
+  console.log(number);
+  return Number(formatEther(number.toString()))
 };
 
 export const isAddressEq = (addressOne, addressTwo) => {
