@@ -80,9 +80,15 @@ export default function Information({ userAddress, isConnect }) {
     const { allLogs, allLogsFromAddr, allowancesFromAddr, volumesDaily } = result;
     setAllLogs(allLogs)
     setUserLogs(allLogsFromAddr);
-    setAllowances(allowancesFromAddr)    
+    setAllowances(allowancesFromAddr)
 
-    setVolumes(_.reverse(volumesDaily))
+
+    setVolumes(_.reverse(volumesDaily.map(item => {
+        // Extraire la date sans l'heure de chaque timestamp
+        const dateWithoutTime = new Date(item.timestamp).toISOString().split('T')[0];
+        // Retourner un nouvel objet avec la date mise à jour
+        return { ...item, timestamp: dateWithoutTime };
+    })))
 
   }
 
@@ -167,9 +173,7 @@ export default function Information({ userAddress, isConnect }) {
       setLoading(true);
 
     }, 2000);
-
   };
-
 
   return (
     <div className="container">
