@@ -10,6 +10,8 @@ import {
 } from "chart.js";
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
+import "./chart.css";
+
 
 // Register ChartJS components using ChartJS.register
 ChartJS.register(
@@ -33,7 +35,8 @@ const VolumeChart = ({ data }) => {
   }, [data]);
 
   return (
-    <div>
+    <div className="chart-container">
+
       <Line
         data={{
           labels,

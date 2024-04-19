@@ -66,3 +66,7 @@ th {
 .stopButton:hover {
   opacity: 0.8;
 }
+.chart-container {
+  width: 50%;
+  height: 400px; /* Ajustez la hauteur selon vos besoins */
+}

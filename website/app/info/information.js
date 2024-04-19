@@ -2,14 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./information.css";
 import { CircleLoader } from "react-spinners";
-import {
-  getRateLimits,
-  parseAllowance,
-  parseNumberToEth,
-  parseUserLogs,
-  waitingRate,
-} from "@/utils/utils";
-import { getEventLogs, getActualBlock } from "@/utils/request";
 import { deleteBdd, fetchAllLogs, fetchAllLogsFromAddr, fetchAllowancesFromAddr, fetchTranferFromAddr, fetchVolumesDaily } from "@/utils/server";
 import VolumeChart from "../chart/chart";
 
@@ -306,8 +298,10 @@ export default function Information({ userAddress, isConnect }) {
           </div>
         </div>
       </div>
-      <div>
-        <h1>CHART</h1>
+      <hr style={{ width: "100%", borderTop: "3px solid black" }} />
+
+    <div className="chart-container">
+        <h1>Daily Volumes BUSD</h1>
         {!_.isEmpty(volumes) ?  <VolumeChart data={volumes}/> : <p>Loading..</p>}
        
       </div>
