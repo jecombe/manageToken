@@ -86,9 +86,9 @@ export default function Information({ userAddress, isConnect }) {
     const { allLogs, allLogsFromAddr, allowancesFromAddr, volumesDaily } = result;
     setAllLogs(allLogs)
     setUserLogs(allLogsFromAddr);
-    setAllowances(allowancesFromAddr)
-    console.log("QQQQQQQQQQQQQQQQQQQQQQQQqq", volumesDaily);
-    setVolumes(volumesDaily)
+    setAllowances(allowancesFromAddr)    
+
+    setVolumes(_.reverse(volumesDaily))
 
   }
 
@@ -102,7 +102,6 @@ export default function Information({ userAddress, isConnect }) {
       } catch (error) {
         console.error(error);
       }
-
     }, 60000);
 //
     setIntervalId(intervalId);
