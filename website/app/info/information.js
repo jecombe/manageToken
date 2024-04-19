@@ -9,6 +9,7 @@ export default function Information({ userAddress, isConnect }) {
   const [loadingAll, setLoadingAll] = useState(true)
   const [loadingUser, setLoadingUser] = useState(true)
   const [loadingAllowance, setLoadingAllowance] = useState(true)
+  const [loadingChart, setLoadingChart] = useState(true)
 
   const [allowances, setAllowances] = useState([]);
   const [volumes, setVolumes] = useState([]);
@@ -46,6 +47,7 @@ export default function Information({ userAddress, isConnect }) {
     setLoadingAll(isLoading);
     setLoadingUser(isLoading);
     setLoadingAllowance(isLoading);
+    setLoadingChart(isLoading)
   }
 
 
@@ -147,6 +149,7 @@ export default function Information({ userAddress, isConnect }) {
       setAllLogs([]);
       setAllowances([]);
       setUserLogs([]);
+      setVolumes([])
 
     } catch (error) {
       console.log(error);
@@ -301,9 +304,16 @@ export default function Information({ userAddress, isConnect }) {
       <hr style={{ width: "100%", borderTop: "3px solid black" }} />
 
     <div className="chart-container">
-        <h1>Daily Volumes BUSD</h1>
-        {!_.isEmpty(volumes) ?  <VolumeChart data={volumes}/> : <p>Loading..</p>}
+    <div style={{ marginLeft: '20px' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <h2 style={{ marginRight: "10px" }}>Daily Volumes BUSD</h2>
+        {loadingChart && (
+                <CircleLoader color={"#000000"} loading={loadingUser} size={20} />
+              )}
+        {!_.isEmpty(volumes) ?  <VolumeChart data={volumes}/> : null}
        
+      </div>
+      </div>
       </div>
     </div>
   );
